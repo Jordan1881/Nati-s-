@@ -1,3 +1,2 @@
-export default function handler(_req: any, res: any) {
-  res.json({ ok: true })
-}
+import app from '../packages/backend/dist/index.js'
+export default app
