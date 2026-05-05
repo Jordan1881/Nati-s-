@@ -24,9 +24,9 @@ export const menuItems = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [
-    index('idx_menu_items_category').on(table.category, table.displayOrder),
-  ]
+  (table) => ({
+    idxCategory: index('idx_menu_items_category').on(table.category, table.displayOrder),
+  })
 )
 
 export const orders = pgTable(
@@ -48,11 +48,11 @@ export const orders = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [
-    uniqueIndex('orders_date_number_unique').on(table.orderDate, table.dailyNumber),
-    index('idx_orders_date').on(table.orderDate),
-    index('idx_orders_phone').on(table.customerPhone),
-  ]
+  (table) => ({
+    ordersDateNumberUnique: uniqueIndex('orders_date_number_unique').on(table.orderDate, table.dailyNumber),
+    idxOrdersDate: index('idx_orders_date').on(table.orderDate),
+    idxOrdersPhone: index('idx_orders_phone').on(table.customerPhone),
+  })
 )
 
 export const orderLines = pgTable(
@@ -71,8 +71,8 @@ export const orderLines = pgTable(
     priceSnap: numeric('price_snap', { precision: 10, scale: 2 }).notNull(),
     categorySnap: text('category_snap').notNull(),
   },
-  (table) => [
-    index('idx_order_lines_order').on(table.orderId),
-    index('idx_order_lines_item').on(table.menuItemId),
-  ]
+  (table) => ({
+    idxOrderLinesOrder: index('idx_order_lines_order').on(table.orderId),
+    idxOrderLinesItem: index('idx_order_lines_item').on(table.menuItemId),
+  })
 )

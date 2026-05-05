@@ -3,10 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "noEmit": false,
-    "paths": {
-      "@natis/shared": ["../shared/src/index.ts"]
-    }
+    "noEmit": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/__tests__", "node_modules"]
 }
