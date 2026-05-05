@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import * as svc from '../services/menuItems.service'
-import type { MenuItem } from '../services/menuItems.service'
+import * as svc from '../services/menuItems.service.js'
+import type { MenuItem } from '../services/menuItems.service.js'
 
 const router = Router()
 

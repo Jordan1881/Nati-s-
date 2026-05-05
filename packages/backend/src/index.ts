@@ -1,14 +1,14 @@
 import 'dotenv/config'
 import express from 'express'
 import cookieParser from 'cookie-parser'
-import authRouter from './routes/auth'
-import menuItemsRouter from './routes/menuItems'
-import ordersRouter from './routes/orders'
-import summaryRouter from './routes/summary'
-import printRouter from './routes/print'
-import customersRouter from './routes/customers'
-import backupRouter from './routes/backup'
-import { authMiddleware } from './middleware/auth'
+import authRouter from './routes/auth.js'
+import menuItemsRouter from './routes/menuItems.js'
+import ordersRouter from './routes/orders.js'
+import summaryRouter from './routes/summary.js'
+import printRouter from './routes/print.js'
+import customersRouter from './routes/customers.js'
+import backupRouter from './routes/backup.js'
+import { authMiddleware } from './middleware/auth.js'
 
 const app = express()
 

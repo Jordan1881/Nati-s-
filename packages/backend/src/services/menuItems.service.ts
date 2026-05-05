@@ -1,5 +1,5 @@
-import { db } from '../db/client'
-import { menuItems } from '../db/schema'
+import { db } from '../db/client.js'
+import { menuItems } from '../db/schema.js'
 import { eq, asc } from 'drizzle-orm'
 
 export type MenuItem = typeof menuItems.$inferSelect

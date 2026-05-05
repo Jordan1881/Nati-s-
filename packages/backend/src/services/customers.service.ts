@@ -1,5 +1,5 @@
-import { db } from '../db/client'
-import { orders, orderLines } from '../db/schema'
+import { db } from '../db/client.js'
+import { orders, orderLines } from '../db/schema.js'
 import { eq, inArray } from 'drizzle-orm'
 
 export interface CustomerSummary {

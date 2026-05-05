@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import * as svc from '../services/orders.service'
+import * as svc from '../services/orders.service.js'
 
 const router = Router()
 

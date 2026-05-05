@@ -1,7 +1,7 @@
-import { db } from '../db/client'
-import { orders, orderLines, menuItems } from '../db/schema'
+import { db } from '../db/client.js'
+import { orders, orderLines, menuItems } from '../db/schema.js'
 import { eq, desc, asc, and, gte, lte, inArray, sql } from 'drizzle-orm'
-import type { MenuItem } from './menuItems.service'
+import type { MenuItem } from './menuItems.service.js'
 import { getActiveSaleDate } from '@natis/shared'
 
 // ---------------------------------------------------------------------------
