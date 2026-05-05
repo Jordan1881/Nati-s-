@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.DS_Store
+
+# Env
+.env
+.env.local
+*.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude local session files
+.claude/
