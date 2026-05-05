@@ -36,7 +36,7 @@ app.use('/print', printRouter)
 
 const PORT = process.env.PORT ?? 3000
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Backend on http://localhost:${PORT}`)
   })
