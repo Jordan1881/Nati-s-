@@ -2,7 +2,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { formatCurrency, formatDate } from '@natis/shared'
+import type { ApiMenuItem, ApiOrderWithLines } from '@natis/shared'
 import { ChevronRight, Pencil, X, Trash2, Printer } from 'lucide-react'
+import { api } from '../api/client'
 
 const CATEGORIES = ['תבשילים', 'חומוס', 'סלטים'] as const
 
@@ -12,55 +14,6 @@ for (let h = 9; h <= 12; h++) {
     if (h === 12 && m > 0) break
     PICKUP_TIMES.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
   }
-}
-
-interface OrderLine {
-  id: number
-  menu_item_id: number
-  quantity: number
-  item_name_snap: string
-  unit_label_snap: string | null
-  price_snap: number
-  category_snap: string
-}
-
-interface Order {
-  id: number
-  daily_number: number
-  order_date: string
-  customer_name: string
-  customer_phone: string
-  pickup_time: string | null
-  status: string | null
-  payment_method: string | null
-  payment_status: string | null
-  notes: string | null
-  total_price: number
-  kitchen_printed_at: string | null
-  customer_printed_at: string | null
-  created_at: string
-  updated_at: string
-  lines: OrderLine[]
-}
-
-interface MenuItem {
-  id: number
-  name: string
-  category: string
-  unit_label: string | null
-  price: number
-  active: boolean
-  display_order: number
-}
-
-async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts })
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || `HTTP ${res.status}`)
-  }
-  if (res.status === 204) return undefined as T
-  return res.json() as Promise<T>
 }
 
 export default function OrderDetailPage() {
@@ -83,15 +36,15 @@ export default function OrderDetailPage() {
   // Lines edit cart
   const [cart, setCart] = useState<Record<number, number>>({})
 
-  const { data: order, isLoading, isError } = useQuery<Order>({
+  const { data: order, isLoading, isError } = useQuery<ApiOrderWithLines>({
     queryKey: ['order', id],
-    queryFn: () => apiFetch(`/api/orders/${id}`),
+    queryFn: () => api.orders.get(parseInt(id!, 10)),
     retry: false,
   })
 
-  const { data: menuItems = [] } = useQuery<MenuItem[]>({
+  const { data: menuItems = [] } = useQuery<ApiMenuItem[]>({
     queryKey: ['menu-items', 'active'],
-    queryFn: () => apiFetch('/api/menu-items?active=true'),
+    queryFn: () => api.menuItems.list(true),
     enabled: editMode,
   })
 
@@ -112,7 +65,7 @@ export default function OrderDetailPage() {
   }, [editMode, order])
 
   const menuItemsById = useMemo(
-    () => new Map(menuItems.map((i) => [i.id, i])),
+    () => new Map<number, ApiMenuItem>(menuItems.map((i) => [i.id, i])),
     [menuItems]
   )
 
@@ -148,8 +101,7 @@ export default function OrderDetailPage() {
   }
 
   const patchMutation = useMutation({
-    mutationFn: (data: object) =>
-      apiFetch<Order>(`/api/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    mutationFn: (data: object) => api.orders.patch(parseInt(id!, 10), data),
     onSuccess: (updated) => {
       qc.setQueryData(['order', id], updated)
       qc.invalidateQueries({ queryKey: ['orders'] })
@@ -158,10 +110,7 @@ export default function OrderDetailPage() {
 
   const linesMutation = useMutation({
     mutationFn: (lines: { menu_item_id: number; quantity: number }[]) =>
-      apiFetch<Order>(`/api/orders/${id}/lines`, {
-        method: 'PUT',
-        body: JSON.stringify({ lines }),
-      }),
+      api.orders.replaceLines(parseInt(id!, 10), lines),
     onSuccess: (updated) => {
       qc.setQueryData(['order', id], updated)
       qc.invalidateQueries({ queryKey: ['orders'] })
@@ -169,7 +118,7 @@ export default function OrderDetailPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: () => apiFetch<void>(`/api/orders/${id}`, { method: 'DELETE' }),
+    mutationFn: () => api.orders.delete(parseInt(id!, 10)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['orders'] })
       navigate('/orders/today', { state: { toast: 'הזמנה נמחקה' } })

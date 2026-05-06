@@ -1,46 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { formatCurrency, formatDate } from '@natis/shared'
+import type { ApiCustomerDetail, ApiRecentOrder } from '@natis/shared'
 import { ArrowRight, ChevronLeft } from 'lucide-react'
-
-interface FavoriteItem {
-  name: string
-  unit_label: string | null
-  quantity: number
-}
-
-interface RecentOrder {
-  id: number
-  daily_number: number
-  order_date: string
-  total_price: number
-  status: string | null
-  payment_status: string | null
-}
-
-interface CustomerDetail {
-  customer_phone: string
-  customer_name: string
-  order_count: number
-  total_spent: number
-  first_seen: string
-  last_seen: string
-  favorite_items: FavoriteItem[]
-  recent_orders: RecentOrder[]
-}
-
-async function fetchCustomer(phone: string): Promise<CustomerDetail> {
-  const res = await fetch(`/api/customers?phone=${encodeURIComponent(phone)}`)
-  if (res.status === 404) throw new Error('not_found')
-  if (!res.ok) throw new Error('Failed to fetch customer')
-  return res.json()
-}
+import { api } from '../api/client'
 
 function dateLabel(iso: string) {
   return formatDate(new Date(iso + 'T12:00:00'), { day: 'numeric', month: 'numeric', year: 'numeric' })
 }
 
-function paymentBadge(order: RecentOrder) {
+function paymentBadge(order: ApiRecentOrder) {
   if (order.payment_status === 'paid') {
     return (
       <span className="text-xs bg-green-100 text-green-700 rounded-full px-2 py-0.5">
@@ -56,9 +25,9 @@ export default function CustomerDetailPage() {
   const navigate = useNavigate()
   const decodedPhone = decodeURIComponent(phone ?? '')
 
-  const { data: customer, isLoading, isError } = useQuery<CustomerDetail>({
+  const { data: customer, isLoading, isError } = useQuery<ApiCustomerDetail>({
     queryKey: ['customer', decodedPhone],
-    queryFn: () => fetchCustomer(decodedPhone),
+    queryFn: () => api.customers.getByPhone(decodedPhone),
     retry: false,
   })
 

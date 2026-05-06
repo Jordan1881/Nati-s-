@@ -2,29 +2,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getActiveSaleDate, formatCurrency, formatDate } from '@natis/shared'
+import type { ApiOrderListItem } from '@natis/shared'
 import { Plus } from 'lucide-react'
-
-interface OrderListItem {
-  id: number
-  daily_number: number
-  order_date: string
-  customer_name: string
-  customer_phone: string
-  pickup_time: string | null
-  status: string | null
-  payment_method: string | null
-  payment_status: string | null
-  total_price: number
-  kitchen_printed_at: string | null
-  customer_printed_at: string | null
-  line_count: number
-}
-
-async function fetchOrders(date: string): Promise<OrderListItem[]> {
-  const res = await fetch(`/api/orders?date=${date}`)
-  if (!res.ok) throw new Error('Failed to fetch orders')
-  return res.json()
-}
+import { api } from '../api/client'
 
 function PaymentBadge({ method, status }: { method: string | null; status: string | null }) {
   if (status === 'paid') {
@@ -76,9 +56,9 @@ export default function OrdersListPage() {
     }
   }, [location.state])
 
-  const { data: orders = [], isLoading, refetch } = useQuery<OrderListItem[]>({
+  const { data: orders = [], isLoading, refetch } = useQuery<ApiOrderListItem[]>({
     queryKey: ['orders', date],
-    queryFn: () => fetchOrders(date),
+    queryFn: () => api.orders.list({ date }),
   })
 
   // Refetch when tab regains focus

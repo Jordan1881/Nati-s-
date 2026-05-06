@@ -1,27 +1,9 @@
 import { Router } from 'express'
-import { z } from 'zod'
+import { createOrderSchema, patchOrderSchema, replaceLinesSchema } from '@natis/shared'
 import * as svc from '../services/orders.service.js'
+import { DomainError } from '../errors.js'
 
 const router = Router()
-
-const createOrderSchema = z.object({
-  order_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  customer_name: z.string().min(1),
-  customer_phone: z.string().min(1),
-  pickup_time: z.string().nullable().optional(),
-  status: z.string().nullable().optional(),
-  payment_method: z.enum(['cash', 'credit']).nullable().optional(),
-  payment_status: z.enum(['paid', 'unpaid']).nullable().optional(),
-  notes: z.string().nullable().optional(),
-  lines: z
-    .array(
-      z.object({
-        menu_item_id: z.number().int().positive(),
-        quantity: z.number().int().min(1),
-      })
-    )
-    .min(1),
-})
 
 function serializeOrder(row: {
   id: number
@@ -88,26 +70,6 @@ function serializeLine(line: {
   }
 }
 
-const patchOrderSchema = z.object({
-  customer_name: z.string().min(1).optional(),
-  customer_phone: z.string().min(1).optional(),
-  pickup_time: z.string().nullable().optional(),
-  status: z.string().nullable().optional(),
-  payment_method: z.enum(['cash', 'credit']).nullable().optional(),
-  payment_status: z.enum(['paid', 'unpaid']).nullable().optional(),
-  notes: z.string().nullable().optional(),
-})
-
-const replaceLinesSchema = z.object({
-  lines: z
-    .array(
-      z.object({
-        menu_item_id: z.number().int().positive(),
-        quantity: z.number().int().min(1),
-      })
-    )
-    .min(1),
-})
 
 router.get('/', async (req, res) => {
   const { date, from, to, phone } = req.query as {
@@ -140,7 +102,7 @@ router.post('/', async (req, res) => {
       lines: order.lines.map(serializeLine),
     })
   } catch (err) {
-    if (err instanceof Error && (err.message.includes('inactive') || err.message.includes('not found'))) {
+    if (err instanceof DomainError) {
       res.status(400).json({ error: err.message })
       return
     }
@@ -189,7 +151,7 @@ router.put('/:id/lines', async (req, res) => {
     if (!order) { res.status(404).json({ error: 'Order not found' }); return }
     res.json({ ...serializeOrder(order), lines: order.lines.map(serializeLine) })
   } catch (err) {
-    if (err instanceof Error && (err.message.includes('inactive') || err.message.includes('not found'))) {
+    if (err instanceof DomainError) {
       res.status(400).json({ error: err.message })
       return
     }

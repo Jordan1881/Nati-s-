@@ -1,8 +1,9 @@
-import { db } from '../db/client.js'
+import { db, type DB } from '../db/client.js'
 import { orders, orderLines, menuItems } from '../db/schema.js'
 import { eq, desc, asc, and, gte, lte, inArray, sql } from 'drizzle-orm'
 import type { MenuItem } from './menuItems.service.js'
 import { getActiveSaleDate } from '@natis/shared'
+import { DomainError } from '../errors.js'
 
 // ---------------------------------------------------------------------------
 // Pure helpers (no DB calls)
@@ -26,10 +27,10 @@ export function computeOrderLines(
   const lineInserts = lineInputs.map((input) => {
     const item = menuItemMap.get(input.menu_item_id)
     if (!item) {
-      throw new Error(`Menu item ${input.menu_item_id} not found`)
+      throw new DomainError('menu_item_not_found', `Menu item ${input.menu_item_id} not found`)
     }
     if (item.active === false) {
-      throw new Error(`Menu item ${input.menu_item_id} is inactive`)
+      throw new DomainError('menu_item_inactive', `Menu item ${input.menu_item_id} is inactive`)
     }
     const unitPrice = parseFloat(item.price as string)
     totalPrice += unitPrice * input.quantity
@@ -47,6 +48,41 @@ export function computeOrderLines(
 
 export function computeDailyNumber(existingMax: number): number {
   return existingMax + 1
+}
+
+// ---------------------------------------------------------------------------
+// Private transaction helpers
+// ---------------------------------------------------------------------------
+
+async function resolveLines(
+  tx: DB,
+  lineInputs: { menu_item_id: number; quantity: number }[]
+) {
+  const ids = lineInputs.map((l) => l.menu_item_id)
+  const fetchedItems = await tx.select().from(menuItems).where(inArray(menuItems.id, ids))
+  const menuItemMap = new Map<number, MenuItem>(fetchedItems.map((item) => [item.id, item]))
+  return computeOrderLines(menuItemMap, lineInputs)
+}
+
+async function persistLines(
+  tx: DB,
+  orderId: number,
+  lineInserts: ReturnType<typeof computeOrderLines>['lineInserts']
+) {
+  return tx
+    .insert(orderLines)
+    .values(
+      lineInserts.map((l) => ({
+        orderId,
+        menuItemId: l.menuItemId,
+        quantity: l.quantity,
+        itemNameSnap: l.itemNameSnap,
+        unitLabelSnap: l.unitLabelSnap,
+        priceSnap: l.priceSnap,
+        categorySnap: l.categorySnap,
+      }))
+    )
+    .returning()
 }
 
 // ---------------------------------------------------------------------------
@@ -165,28 +201,11 @@ export async function replaceOrderLines(
     const [existingOrder] = await tx.select().from(orders).where(eq(orders.id, id))
     if (!existingOrder) return null
 
-    const itemIds = lineInputs.map((l) => l.menu_item_id)
-    const fetchedItems = await tx.select().from(menuItems).where(inArray(menuItems.id, itemIds))
-    const menuItemMap = new Map<number, MenuItem>(fetchedItems.map((item) => [item.id, item]))
-
-    const { lineInserts, totalPrice } = computeOrderLines(menuItemMap, lineInputs)
+    const { lineInserts, totalPrice } = await resolveLines(tx as unknown as DB, lineInputs)
 
     await tx.delete(orderLines).where(eq(orderLines.orderId, id))
 
-    const newLines = await tx
-      .insert(orderLines)
-      .values(
-        lineInserts.map((l) => ({
-          orderId: id,
-          menuItemId: l.menuItemId,
-          quantity: l.quantity,
-          itemNameSnap: l.itemNameSnap,
-          unitLabelSnap: l.unitLabelSnap,
-          priceSnap: l.priceSnap,
-          categorySnap: l.categorySnap,
-        }))
-      )
-      .returning()
+    const newLines = await persistLines(tx as unknown as DB, id, lineInserts)
 
     const [updatedOrder] = await tx
       .update(orders)
@@ -260,22 +279,14 @@ export async function createOrder(data: {
   lines: { menu_item_id: number; quantity: number }[]
 }) {
   return db.transaction(async (tx) => {
-    // Fetch menu items for the given IDs
-    const ids = data.lines.map((l) => l.menu_item_id)
-    const fetchedItems = await tx.select().from(menuItems).where(inArray(menuItems.id, ids))
+    const { lineInserts, totalPrice } = await resolveLines(tx as unknown as DB, data.lines)
 
-    const menuItemMap = new Map<number, MenuItem>(fetchedItems.map((item) => [item.id, item]))
-
-    const { lineInserts, totalPrice } = computeOrderLines(menuItemMap, data.lines)
-
-    // Compute daily number atomically
     const dailyResult = await tx
       .select({ val: sql<number>`COALESCE(MAX(${orders.dailyNumber}), 0) + 1` })
       .from(orders)
       .where(eq(orders.orderDate, data.order_date))
     const dailyNumber = dailyResult[0].val
 
-    // Insert order
     const [orderRow] = await tx
       .insert(orders)
       .values({
@@ -292,21 +303,7 @@ export async function createOrder(data: {
       })
       .returning()
 
-    // Insert order lines
-    const insertedLines = await tx
-      .insert(orderLines)
-      .values(
-        lineInserts.map((l) => ({
-          orderId: orderRow.id,
-          menuItemId: l.menuItemId,
-          quantity: l.quantity,
-          itemNameSnap: l.itemNameSnap,
-          unitLabelSnap: l.unitLabelSnap,
-          priceSnap: l.priceSnap,
-          categorySnap: l.categorySnap,
-        }))
-      )
-      .returning()
+    const insertedLines = await persistLines(tx as unknown as DB, orderRow.id, lineInserts)
 
     return { ...orderRow, lines: insertedLines }
   })

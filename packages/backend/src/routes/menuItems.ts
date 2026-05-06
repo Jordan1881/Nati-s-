@@ -1,28 +1,9 @@
 import { Router } from 'express'
-import { z } from 'zod'
+import { createMenuItemSchema, patchMenuItemSchema } from '@natis/shared'
 import * as svc from '../services/menuItems.service.js'
 import type { MenuItem } from '../services/menuItems.service.js'
 
 const router = Router()
-
-const createSchema = z.object({
-  name: z.string().min(1),
-  category: z.string().min(1),
-  unit_label: z.string().nullable().optional(),
-  price: z.number().min(0),
-  display_order: z.number().int().optional(),
-})
-
-const patchSchema = z
-  .object({
-    name: z.string().min(1),
-    category: z.string().min(1),
-    unit_label: z.string().nullable(),
-    price: z.number().min(0),
-    active: z.boolean(),
-    display_order: z.number().int(),
-  })
-  .partial()
 
 function serialize(item: MenuItem) {
   return {
@@ -56,7 +37,7 @@ router.get('/:id', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const result = createSchema.safeParse(req.body)
+  const result = createMenuItemSchema.safeParse(req.body)
   if (!result.success) {
     res.status(400).json({ error: 'Validation error', details: result.error.flatten() })
     return
@@ -74,7 +55,7 @@ router.post('/', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10)
   if (isNaN(id)) { res.status(400).json({ error: 'Invalid id' }); return }
-  const result = patchSchema.safeParse(req.body)
+  const result = patchMenuItemSchema.safeParse(req.body)
   if (!result.success) {
     res.status(400).json({ error: 'Validation error', details: result.error.flatten() })
     return

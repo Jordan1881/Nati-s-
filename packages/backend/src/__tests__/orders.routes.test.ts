@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest'
 import request from 'supertest'
+import { DomainError } from '../errors'
 
 vi.mock('../services/orders.service', () => ({
   listOrders: vi.fn(),
@@ -166,7 +167,7 @@ describe('POST /api/orders', () => {
   })
 
   it('returns 400 when createOrder throws Error with inactive', async () => {
-    vi.mocked(svc.createOrder).mockRejectedValue(new Error('Menu item 3 is inactive'))
+    vi.mocked(svc.createOrder).mockRejectedValue(new DomainError('menu_item_inactive', 'Menu item 3 is inactive'))
     const res = await request(app)
       .post('/api/orders')
       .set('Cookie', authCookies)
@@ -261,7 +262,7 @@ describe('PUT /api/orders/:id/lines', () => {
   })
 
   it('returns 400 when service throws inactive error', async () => {
-    vi.mocked(svc.replaceOrderLines).mockRejectedValue(new Error('Menu item 5 is inactive'))
+    vi.mocked(svc.replaceOrderLines).mockRejectedValue(new DomainError('menu_item_inactive', 'Menu item 5 is inactive'))
     const res = await request(app)
       .put('/api/orders/1/lines')
       .set('Cookie', authCookies)

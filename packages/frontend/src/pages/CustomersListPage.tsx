@@ -2,33 +2,18 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { formatCurrency, formatDate } from '@natis/shared'
+import type { ApiCustomerSummary } from '@natis/shared'
 import { Search, Plus } from 'lucide-react'
-
-interface Customer {
-  customer_phone: string
-  customer_name: string
-  order_count: number
-  total_spent: number
-  first_seen: string
-  last_seen: string
-}
-
-async function fetchCustomers(search: string, sort: string): Promise<Customer[]> {
-  const params = new URLSearchParams({ sort })
-  if (search) params.set('search', search)
-  const res = await fetch(`/api/customers?${params}`)
-  if (!res.ok) throw new Error('Failed to fetch customers')
-  return res.json()
-}
+import { api } from '../api/client'
 
 export default function CustomersListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<'orders' | 'spent'>('orders')
 
-  const { data: customers = [], isLoading } = useQuery<Customer[]>({
+  const { data: customers = [], isLoading } = useQuery<ApiCustomerSummary[]>({
     queryKey: ['customers', search, sort],
-    queryFn: () => fetchCustomers(search, sort),
+    queryFn: () => api.customers.list({ search: search || undefined, sort }),
     placeholderData: prev => prev,
   })
 

@@ -16,30 +16,15 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Pencil, X } from 'lucide-react'
-
-interface MenuItem {
-  id: number
-  name: string
-  category: string
-  unit_label: string | null
-  price: number
-  active: boolean
-  display_order: number
-}
+import type { ApiMenuItem } from '@natis/shared'
+import { api } from '../api/client'
 
 const CATEGORIES = ['תבשילים', 'חומוס', 'סלטים'] as const
 
-async function apiFetch(path: string, opts?: RequestInit) {
-  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts })
-  if (!res.ok) throw new Error(await res.text())
-  if (res.status === 204) return null
-  return res.json()
-}
-
 function useMenuItems() {
-  return useQuery<MenuItem[]>({
+  return useQuery<ApiMenuItem[]>({
     queryKey: ['menu-items'],
-    queryFn: () => apiFetch('/api/menu-items'),
+    queryFn: () => api.menuItems.list(),
   })
 }
 
@@ -145,9 +130,9 @@ function SortableRow({
   onEdit,
   onToggleActive,
 }: {
-  item: MenuItem
-  onEdit: (item: MenuItem) => void
-  onToggleActive: (item: MenuItem) => void
+  item: ApiMenuItem
+  onEdit: (item: ApiMenuItem) => void
+  onToggleActive: (item: ApiMenuItem) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id })
@@ -224,9 +209,9 @@ function CategorySection({
   onReorder,
 }: {
   category: string
-  items: MenuItem[]
-  onEdit: (item: MenuItem) => void
-  onToggleActive: (item: MenuItem) => void
+  items: ApiMenuItem[]
+  onEdit: (item: ApiMenuItem) => void
+  onToggleActive: (item: ApiMenuItem) => void
   onAdd: (category: string) => void
   onReorder: (category: string, ids: number[]) => void
 }) {
@@ -284,19 +269,17 @@ export default function MenuAdminPage() {
 
   const [modal, setModal] = useState<
     | { mode: 'add'; category: string }
-    | { mode: 'edit'; item: MenuItem }
+    | { mode: 'edit'; item: ApiMenuItem }
     | null
   >(null)
 
   const patchItem = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: object }) =>
-      apiFetch(`/api/menu-items/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    mutationFn: ({ id, data }: { id: number; data: object }) => api.menuItems.patch(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['menu-items'] }),
   })
 
   const createItem = useMutation({
-    mutationFn: (data: object) =>
-      apiFetch('/api/menu-items', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data: object) => api.menuItems.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['menu-items'] }),
   })
 
@@ -315,7 +298,7 @@ export default function MenuAdminPage() {
     setModal(null)
   }
 
-  function handleToggleActive(item: MenuItem) {
+  function handleToggleActive(item: ApiMenuItem) {
     patchItem.mutate({ id: item.id, data: { active: !item.active } })
   }
 

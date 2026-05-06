@@ -2,25 +2,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getActiveSaleDate, formatCurrency } from '@natis/shared'
+import type { ApiMenuItem, ApiOrderListItem } from '@natis/shared'
 import { ShoppingCart, X } from 'lucide-react'
-
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-interface MenuItem {
-  id: number
-  name: string
-  category: string
-  unit_label: string | null
-  price: number
-  active: boolean
-  display_order: number
-}
-
-interface OrderListItem {
-  id: number
-  customer_name: string
-  customer_phone: string
-}
+import { api } from '../api/client'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -34,23 +18,12 @@ for (let h = 9; h <= 12; h++) {
   }
 }
 
-// ── API helpers ────────────────────────────────────────────────────────────────
-
-async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts })
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text)
-  }
-  return res.json() as Promise<T>
-}
-
 // ── Hooks ──────────────────────────────────────────────────────────────────────
 
 function useMenuItems() {
-  return useQuery<MenuItem[]>({
+  return useQuery<ApiMenuItem[]>({
     queryKey: ['menu-items', 'active'],
-    queryFn: () => apiFetch('/api/menu-items?active=true'),
+    queryFn: () => api.menuItems.list(true),
   })
 }
 
@@ -63,9 +36,9 @@ function useCustomerLookup(phone: string) {
   }, [phone])
 
   const digits = debounced.replace(/\D/g, '')
-  return useQuery<OrderListItem[]>({
+  return useQuery<ApiOrderListItem[]>({
     queryKey: ['customer-lookup', debounced],
-    queryFn: () => apiFetch(`/api/orders?phone=${encodeURIComponent(debounced)}`),
+    queryFn: () => api.orders.list({ phone: debounced }),
     enabled: digits.length >= 7,
     staleTime: 30_000,
   })
@@ -79,7 +52,7 @@ function ItemCard({
   onAdd,
   onRemove,
 }: {
-  item: MenuItem
+  item: ApiMenuItem
   qty: number
   onAdd: () => void
   onRemove: () => void
@@ -139,7 +112,7 @@ function CartPanel({
   saving,
 }: {
   cart: Record<number, number>
-  menuItemsById: Map<number, MenuItem>
+  menuItemsById: Map<number, ApiMenuItem>
   notes: string
   paymentOption: 'cash' | 'credit' | null
   onNotesChange: (v: string) => void
@@ -299,11 +272,7 @@ export default function OrderEntryPage() {
     Object.keys(cart).length > 0
 
   const createOrder = useMutation({
-    mutationFn: (data: object) =>
-      apiFetch<{ id: number; daily_number: number }>('/api/orders', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+    mutationFn: (data: object) => api.orders.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] }),
   })
 

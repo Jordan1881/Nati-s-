@@ -1,6 +1,6 @@
 import { db } from '../db/client.js'
 import { orders, orderLines } from '../db/schema.js'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 
 export interface CustomerSummary {
   customer_phone: string
@@ -38,35 +38,32 @@ export async function getCustomers(opts: {
 }): Promise<CustomerSummary[]> {
   const { search, sort, limit = 50 } = opts
 
-  const allOrders = await db.select().from(orders)
-
-  const byPhone = new Map<string, typeof allOrders>()
-  for (const order of allOrders) {
-    if (!byPhone.has(order.customerPhone)) byPhone.set(order.customerPhone, [])
-    byPhone.get(order.customerPhone)!.push(order)
-  }
-
-  let customers: CustomerSummary[] = []
-  for (const [phone, orderList] of byPhone) {
-    const sortedByDate = [...orderList].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-    const total_spent = orderList.reduce((s, o) => s + parseFloat(o.totalPrice), 0)
-    const dates = orderList.map(o => o.orderDate).sort()
-    customers.push({
-      customer_phone: phone,
-      customer_name: sortedByDate[0].customerName,
-      order_count: orderList.length,
-      total_spent,
-      first_seen: dates[0],
-      last_seen: dates[dates.length - 1],
+  const rows = await db
+    .select({
+      customer_phone: orders.customerPhone,
+      // most recent name for this phone number
+      customer_name: sql<string>`(array_agg(${orders.customerName} ORDER BY ${orders.createdAt} DESC))[1]`,
+      order_count: sql<number>`count(*)::int`,
+      total_spent: sql<number>`sum(${orders.totalPrice}::numeric)`,
+      first_seen: sql<string>`min(${orders.orderDate})`,
+      last_seen: sql<string>`max(${orders.orderDate})`,
     })
-  }
+    .from(orders)
+    .groupBy(orders.customerPhone)
+
+  let customers: CustomerSummary[] = rows.map((r) => ({
+    customer_phone: r.customer_phone,
+    customer_name: r.customer_name,
+    order_count: r.order_count,
+    total_spent: Number(r.total_spent),
+    first_seen: r.first_seen,
+    last_seen: r.last_seen,
+  }))
 
   if (search) {
     const q = search.toLowerCase()
     customers = customers.filter(
-      c => c.customer_name.toLowerCase().includes(q) || c.customer_phone.includes(q)
+      (c) => c.customer_name.toLowerCase().includes(q) || c.customer_phone.includes(q)
     )
   }
 
@@ -91,15 +88,12 @@ export async function getCustomerByPhone(phone: string): Promise<CustomerDetail 
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   )
   const total_spent = customerOrders.reduce((s, o) => s + parseFloat(o.totalPrice), 0)
-  const dates = customerOrders.map(o => o.orderDate).sort()
+  const dates = customerOrders.map((o) => o.orderDate).sort()
 
-  const lines =
-    customerOrders.length > 0
-      ? await db
-          .select()
-          .from(orderLines)
-          .where(inArray(orderLines.orderId, customerOrders.map(o => o.id)))
-      : []
+  const lines = await db
+    .select()
+    .from(orderLines)
+    .where(inArray(orderLines.orderId, customerOrders.map((o) => o.id)))
 
   const itemMap = new Map<string, FavoriteItem>()
   for (const line of lines) {
@@ -125,7 +119,7 @@ export async function getCustomerByPhone(phone: string): Promise<CustomerDetail 
       return b.dailyNumber - a.dailyNumber
     })
     .slice(0, 5)
-    .map(o => ({
+    .map((o) => ({
       id: o.id,
       daily_number: o.dailyNumber,
       order_date: o.orderDate,
