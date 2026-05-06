@@ -58,21 +58,27 @@ function ItemCard({
   onRemove: () => void
 }) {
   return (
-    <div className="border rounded-xl p-3 flex flex-col gap-2 bg-white select-none">
+    <div
+      className={`rounded-xl p-3 flex flex-col gap-2 select-none transition-all ${
+        qty > 0
+          ? 'bg-brand-50 border border-brand-300 shadow-sm'
+          : 'bg-white border border-[#F0E4D0] hover:border-brand-200 hover:shadow-sm'
+      }`}
+    >
       <div className="text-sm font-medium leading-tight">
         {item.name}
         {item.unit_label && (
-          <span className="text-gray-500 text-xs me-1"> {item.unit_label}</span>
+          <span className="text-gray-400 text-xs me-1"> {item.unit_label}</span>
         )}
       </div>
-      <div className="text-sm text-gray-600" dir="ltr">
+      <div className="text-sm text-gray-500" dir="ltr">
         {formatCurrency(item.price)}
       </div>
       <div className="flex items-center justify-end gap-1 mt-auto">
         {qty === 0 ? (
           <button
             onClick={onAdd}
-            className="w-8 h-8 rounded-lg bg-blue-600 text-white text-lg font-bold flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-lg bg-brand-500 text-white text-lg font-bold flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all"
           >
             +
           </button>
@@ -80,14 +86,14 @@ function ItemCard({
           <div className="flex items-center gap-1">
             <button
               onClick={onRemove}
-              className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-lg font-bold flex items-center justify-center active:scale-95 transition-all"
+              className="w-8 h-8 rounded-lg bg-white border border-[#E8D8C4] hover:bg-gray-100 text-lg font-bold flex items-center justify-center active:scale-95 transition-all"
             >
               −
             </button>
-            <span className="w-6 text-center font-semibold text-sm">{qty}</span>
+            <span className="w-6 text-center font-bold text-sm text-brand-700">{qty}</span>
             <button
               onClick={onAdd}
-              className="w-8 h-8 rounded-lg bg-blue-600 text-white text-lg font-bold flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all"
+              className="w-8 h-8 rounded-lg bg-brand-500 text-white text-lg font-bold flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all"
             >
               +
             </button>
@@ -131,21 +137,21 @@ function CartPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="font-bold text-base">
+      <h2 className="font-bold text-base text-gray-800">
         הזמנה{itemCount > 0 && ` (${itemCount} פריטים)`}
       </h2>
 
       {cartEntries.length === 0 ? (
         <p className="text-gray-400 text-sm py-4 text-center">הוסף פריטים מהתפריט</p>
       ) : (
-        <div className="flex flex-col gap-1 text-sm">
+        <div className="flex flex-col gap-1.5 text-sm">
           {cartEntries.map(({ item, qty }) => (
             <div key={item.id} className="flex justify-between gap-2">
               <span className="text-gray-700">
                 {qty}× {item.name}
                 {item.unit_label && <span className="text-gray-400 text-xs"> {item.unit_label}</span>}
               </span>
-              <span className="whitespace-nowrap text-gray-800" dir="ltr">
+              <span className="whitespace-nowrap font-medium text-gray-800" dir="ltr">
                 {formatCurrency(item.price * qty)}
               </span>
             </div>
@@ -153,12 +159,12 @@ function CartPanel({
         </div>
       )}
 
-      <hr />
+      <hr className="border-[#F0E4D0]" />
 
       <div>
-        <label className="block text-sm font-medium mb-1">הערות</label>
+        <label className="block text-sm font-medium mb-1 text-gray-700">הערות</label>
         <textarea
-          className="w-full border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full border border-[#E8D8C4] rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-colors"
           rows={2}
           value={notes}
           onChange={e => onNotesChange(e.target.value)}
@@ -167,7 +173,7 @@ function CartPanel({
       </div>
 
       <div>
-        <p className="text-sm font-medium mb-2">תשלום</p>
+        <p className="text-sm font-medium mb-2 text-gray-700">תשלום</p>
         <div className="flex flex-wrap gap-3 text-sm">
           {(
             [
@@ -179,11 +185,11 @@ function CartPanel({
               [null, 'טרם'],
             ] as const
           ).map(([val, label]) => (
-            <label key={label} className="flex items-center gap-1 cursor-pointer">
+            <label key={label} className="flex items-center gap-1.5 cursor-pointer">
               <input
                 type="radio"
                 name="payment"
-                className="accent-blue-600"
+                className="accent-brand-500"
                 checked={paymentOption === val}
                 onChange={() => onPaymentChange(val)}
               />
@@ -193,9 +199,9 @@ function CartPanel({
         </div>
       </div>
 
-      <hr />
+      <hr className="border-[#F0E4D0]" />
 
-      <div className="flex justify-between items-center font-bold text-lg">
+      <div className="flex justify-between items-center font-black text-xl text-gray-900">
         <span>סה״כ</span>
         <span dir="ltr">{formatCurrency(total)}</span>
       </div>
@@ -203,14 +209,14 @@ function CartPanel({
       <button
         onClick={onSaveAndPrint}
         disabled={!canSubmit || saving}
-        className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
       >
         שמור והדפס שובר
       </button>
       <button
         onClick={onSave}
         disabled={!canSubmit || saving}
-        className="w-full py-2 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-2.5 rounded-xl border-2 border-brand-500 text-brand-600 font-bold hover:bg-brand-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         שמור
       </button>
@@ -325,12 +331,12 @@ export default function OrderEntryPage() {
   }
 
   return (
-    <main dir="rtl" className="min-h-screen bg-gray-50">
+    <main dir="rtl" className="min-h-screen bg-[#FDFAF6]">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-[#F0E4D0] sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => navigate('/orders/today')}
-          className="text-blue-600 text-sm hover:underline"
+          className="text-brand-600 text-sm hover:text-brand-700 font-medium"
         >
           ← הזמנות
         </button>
@@ -343,15 +349,17 @@ export default function OrderEntryPage() {
         <div className="flex-1 flex flex-col gap-4">
 
           {/* Customer info */}
-          <section className="bg-white rounded-2xl p-4 flex flex-col gap-3">
+          <section className="bg-white rounded-2xl p-4 flex flex-col gap-3 border border-[#F0E4D0] shadow-md">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">פרטי לקוח</h2>
+
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium mb-1">טלפון</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">טלפון</label>
               <input
                 type="tel"
                 inputMode="tel"
                 dir="ltr"
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-left"
+                className="w-full border border-[#E8D8C4] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 text-left transition-colors"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="050-1234567"
@@ -360,13 +368,13 @@ export default function OrderEntryPage() {
 
             {/* Returning customer banner */}
             {returningCustomer && (
-              <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm">
-                <span className="text-blue-800 font-medium">
+              <div className="flex items-center justify-between bg-brand-50 border border-brand-200 rounded-xl px-3 py-2.5 text-sm">
+                <span className="text-brand-800 font-medium">
                   לקוח חוזר: {returningCustomer.name} · {returningCustomer.count} הזמנות
                 </span>
                 <button
                   onClick={() => setName(returningCustomer.name)}
-                  className="text-blue-600 font-bold hover:underline whitespace-nowrap me-2"
+                  className="text-brand-600 font-bold hover:text-brand-700 whitespace-nowrap me-2"
                 >
                   השתמש בפרטים
                 </button>
@@ -375,10 +383,10 @@ export default function OrderEntryPage() {
 
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium mb-1">שם לקוח</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">שם לקוח</label>
               <input
                 type="text"
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-[#E8D8C4] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-colors"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="שם מלא"
@@ -388,10 +396,10 @@ export default function OrderEntryPage() {
             <div className="grid grid-cols-2 gap-3">
               {/* Pickup time */}
               <div>
-                <label className="block text-sm font-medium mb-1">זמן איסוף</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">זמן איסוף</label>
                 <select
                   dir="ltr"
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-left"
+                  className="w-full border border-[#E8D8C4] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 text-left transition-colors"
                   value={pickupTime}
                   onChange={e => setPickupTime(e.target.value)}
                 >
@@ -403,11 +411,11 @@ export default function OrderEntryPage() {
 
               {/* Order date */}
               <div>
-                <label className="block text-sm font-medium mb-1">תאריך הזמנה</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">תאריך הזמנה</label>
                 <input
                   type="date"
                   dir="ltr"
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-left"
+                  className="w-full border border-[#E8D8C4] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 text-left transition-colors"
                   value={orderDate}
                   onChange={e => setOrderDate(e.target.value)}
                 />
@@ -416,17 +424,19 @@ export default function OrderEntryPage() {
           </section>
 
           {/* Menu */}
-          <section className="bg-white rounded-2xl p-4 flex flex-col gap-3">
+          <section className="bg-white rounded-2xl p-4 flex flex-col gap-3 border border-[#F0E4D0] shadow-md">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">תפריט</h2>
+
             {/* Category tabs */}
-            <div className="flex gap-2 border-b pb-2">
+            <div className="flex gap-2">
               {CATEGORIES.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     activeCategory === cat
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-brand-500 text-white shadow-sm'
+                      : 'bg-white border border-[#F0E4D0] text-gray-600 hover:border-brand-300 hover:text-brand-600'
                   }`}
                 >
                   {cat}
@@ -463,7 +473,7 @@ export default function OrderEntryPage() {
 
         {/* ── End column: cart panel (desktop) ── */}
         <aside className="hidden lg:block w-80 shrink-0">
-          <div className="sticky top-[100px] bg-white rounded-2xl p-4 shadow-sm">
+          <div className="sticky top-[72px] bg-white rounded-2xl p-4 shadow-md border border-[#F0E4D0]">
             <CartPanel
               cart={cart}
               menuItemsById={menuItemsById}
@@ -484,11 +494,11 @@ export default function OrderEntryPage() {
         {/* FAB */}
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-6 start-6 z-20 bg-blue-600 text-white rounded-full h-14 px-5 shadow-lg flex items-center gap-2 font-semibold"
+          className="fixed bottom-6 start-6 z-20 bg-brand-500 text-white rounded-full h-14 px-5 shadow-lg flex items-center gap-2 font-semibold hover:bg-brand-600 transition-colors"
         >
           <ShoppingCart size={20} />
           {cartItemCount > 0 && (
-            <span className="bg-white text-blue-600 rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+            <span className="bg-white text-brand-600 rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
               {cartItemCount}
             </span>
           )}
@@ -499,7 +509,7 @@ export default function OrderEntryPage() {
         {cartOpen && (
           <div className="fixed inset-0 z-30 flex flex-col justify-end" dir="rtl">
             <div className="absolute inset-0 bg-black/40" onClick={() => setCartOpen(false)} />
-            <div className="relative bg-white rounded-t-2xl p-5 max-h-[85vh] overflow-y-auto">
+            <div className="relative bg-white rounded-t-2xl p-5 max-h-[85vh] overflow-y-auto border-t border-[#F0E4D0]">
               <button
                 onClick={() => setCartOpen(false)}
                 className="absolute top-4 start-4 text-gray-400 hover:text-gray-700"

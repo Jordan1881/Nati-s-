@@ -16,15 +16,15 @@ export default function NavBar() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
       isActive
-        ? 'bg-blue-50 text-blue-700'
-        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+        ? 'bg-brand-500/20 text-brand-400'
+        : 'text-[#C4A882] hover:text-white hover:bg-white/10'
     }`
 
   return (
-    <nav dir="rtl" className="bg-white border-b sticky top-0 z-30">
+    <nav dir="rtl" className="bg-[#1C1410] border-b border-[#2E1F17] sticky top-0 z-30">
       {/* Desktop */}
-      <div className="hidden sm:flex items-center gap-1 px-4 h-11">
-        <span className="font-bold text-gray-900 me-4 text-sm">נטיס</span>
+      <div className="hidden sm:flex items-center gap-1 px-4 h-12">
+        <span className="font-bold text-brand-400 me-5 text-base tracking-wide">Nati's</span>
         {NAV_ITEMS.map(({ to, label }) => (
           <NavLink key={to} to={to} className={linkClass}>
             {label}
@@ -33,11 +33,11 @@ export default function NavBar() {
       </div>
 
       {/* Mobile top bar */}
-      <div className="flex sm:hidden items-center justify-between px-4 h-11">
-        <span className="font-bold text-gray-900 text-sm">נטיס</span>
+      <div className="flex sm:hidden items-center justify-between px-4 h-12">
+        <span className="font-bold text-brand-400 text-base tracking-wide">Nati's</span>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100"
+          className="p-1.5 rounded-lg text-[#C4A882] hover:bg-white/10 transition-colors"
           aria-label={open ? 'סגור תפריט' : 'פתח תפריט'}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
@@ -46,7 +46,7 @@ export default function NavBar() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="sm:hidden border-t flex flex-col py-1">
+        <div className="sm:hidden border-t border-[#2E1F17] flex flex-col py-1">
           {NAV_ITEMS.map(({ to, label }) => (
             <NavLink
               key={to}
@@ -54,7 +54,9 @@ export default function NavBar() {
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 `px-4 py-3 text-sm font-medium transition-colors ${
-                  isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
+                  isActive
+                    ? 'bg-brand-500/20 text-brand-400'
+                    : 'text-[#C4A882] hover:bg-white/10 hover:text-white'
                 }`
               }
             >

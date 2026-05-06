@@ -46,7 +46,6 @@ export default function OrdersListPage() {
   const [filter, setFilter] = useState<'all' | 'unpaid' | 'unprinted'>('all')
   const [toast, setToast] = useState<string | null>(null)
 
-  // Show success toast from navigation state
   useEffect(() => {
     const msg = (location.state as { toast?: string } | null)?.toast
     if (msg) {
@@ -61,7 +60,6 @@ export default function OrdersListPage() {
     queryFn: () => api.orders.list({ date }),
   })
 
-  // Refetch when tab regains focus
   useEffect(() => {
     function onFocus() { refetch() }
     document.addEventListener('visibilitychange', onFocus)
@@ -85,14 +83,14 @@ export default function OrdersListPage() {
   })
 
   return (
-    <main dir="rtl" className="min-h-screen bg-gray-50">
+    <main dir="rtl" className="min-h-screen bg-[#FDFAF6]">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between gap-4">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-[#F0E4D0] px-4 py-3 flex items-center justify-between gap-4">
         <h1 className="font-bold text-base">הזמנות ל{dateLabel}</h1>
         <input
           type="date"
           dir="ltr"
-          className="border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="border border-[#E8D8C4] rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-colors"
           value={date}
           onChange={e => setDate(e.target.value)}
         />
@@ -112,8 +110,8 @@ export default function OrdersListPage() {
             onClick={() => setFilter(val)}
             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
               filter === val
-                ? 'bg-blue-600 text-white'
-                : 'bg-white border text-gray-600 hover:bg-gray-50'
+                ? 'bg-brand-500 text-white shadow-sm'
+                : 'bg-white border border-[#F0E4D0] text-gray-600 hover:border-brand-300 hover:text-brand-700'
             }`}
           >
             {label}
@@ -138,7 +136,7 @@ export default function OrdersListPage() {
             <p className="text-lg">אין הזמנות ליום זה</p>
             <button
               onClick={() => navigate('/orders/new')}
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 bg-brand-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-brand-600 transition-colors shadow-sm"
             >
               <Plus size={18} />
               הזמנה חדשה
@@ -151,7 +149,7 @@ export default function OrdersListPage() {
             <button
               key={order.id}
               onClick={() => navigate(`/orders/${order.id}`)}
-              className="bg-white rounded-xl border p-4 text-start hover:border-blue-400 hover:shadow-sm transition-all w-full"
+              className="bg-white rounded-xl border border-[#F0E4D0] shadow-sm p-4 text-start hover:border-brand-300 hover:shadow-md transition-all w-full"
             >
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
@@ -179,7 +177,7 @@ export default function OrdersListPage() {
       {/* FAB: new order */}
       <button
         onClick={() => navigate('/orders/new')}
-        className="fixed bottom-6 start-6 z-20 bg-blue-600 text-white rounded-full h-14 w-14 shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors text-2xl"
+        className="fixed bottom-6 start-6 z-20 bg-brand-500 text-white rounded-full h-14 w-14 shadow-lg flex items-center justify-center hover:bg-brand-600 transition-colors"
         aria-label="הזמנה חדשה"
       >
         <Plus size={24} />

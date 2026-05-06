@@ -18,8 +18,8 @@ export default function CustomersListPage() {
   })
 
   return (
-    <main dir="rtl" className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
+    <main dir="rtl" className="min-h-screen bg-[#FDFAF6]">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-[#F0E4D0] px-4 py-3 flex items-center gap-3">
         <h1 className="font-bold text-base flex-1">לקוחות</h1>
         <div className="relative flex-1 max-w-xs">
           <Search size={15} className="absolute top-1/2 -translate-y-1/2 start-3 text-gray-400 pointer-events-none" />
@@ -28,19 +28,21 @@ export default function CustomersListPage() {
             placeholder="חיפוש לפי שם או טלפון"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full border rounded-lg ps-8 pe-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-[#E8D8C4] rounded-xl ps-8 pe-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-colors"
           />
         </div>
       </header>
 
       {/* Sort pills */}
-      <div className="bg-white border-b px-4 py-2 flex gap-2">
+      <div className="bg-white/95 border-b border-[#F0E4D0] px-4 py-2 flex gap-2">
         {(['orders', 'spent'] as const).map(s => (
           <button
             key={s}
             onClick={() => setSort(s)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-              sort === s ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              sort === s
+                ? 'bg-brand-500 text-white shadow-sm'
+                : 'bg-white border border-[#F0E4D0] text-gray-600 hover:border-brand-300 hover:text-brand-600'
             }`}
           >
             {s === 'orders' ? 'לפי הזמנות' : 'לפי סכום'}
@@ -60,7 +62,7 @@ export default function CustomersListPage() {
             <button
               key={c.customer_phone}
               onClick={() => navigate(`/customers/${encodeURIComponent(c.customer_phone)}`)}
-              className="bg-white rounded-xl p-4 text-start shadow-sm hover:shadow-md transition-shadow w-full"
+              className="bg-white rounded-xl p-4 text-start border border-[#F0E4D0] shadow-sm hover:shadow-md hover:border-brand-300 transition-all w-full"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -84,7 +86,7 @@ export default function CustomersListPage() {
 
       <button
         onClick={() => navigate('/orders/new')}
-        className="fixed bottom-6 start-6 z-20 bg-blue-600 text-white rounded-full h-14 w-14 shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+        className="fixed bottom-6 start-6 z-20 bg-brand-500 text-white rounded-full h-14 w-14 shadow-lg flex items-center justify-center hover:bg-brand-600 transition-colors"
         aria-label="הזמנה חדשה"
       >
         <Plus size={24} />

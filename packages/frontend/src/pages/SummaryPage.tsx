@@ -90,7 +90,6 @@ export default function SummaryPage() {
     year: 'numeric',
   })
 
-  // Build per-category item rows for the table
   const itemsByCategory = useMemo(() => {
     if (!summary) return []
 
@@ -138,14 +137,14 @@ export default function SummaryPage() {
   const unpaid = summary?.payment_breakdown.unpaid
 
   return (
-    <main dir="rtl" className="min-h-screen bg-gray-50">
+    <main dir="rtl" className="min-h-screen bg-[#FDFAF6]">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between gap-4">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-[#F0E4D0] px-4 py-3 flex items-center justify-between gap-4">
         <h1 className="font-bold text-base">סיכום יומי · {dateLabel}</h1>
         <input
           type="date"
           dir="ltr"
-          className="border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="border border-[#E8D8C4] rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-colors"
           value={date}
           onChange={e => setDate(e.target.value)}
         />
@@ -165,14 +164,14 @@ export default function SummaryPage() {
         {summary && summary.order_count > 0 && (
           <>
             {/* ── Headline numbers ── */}
-            <section className="bg-white rounded-2xl p-5">
+            <section className="bg-white rounded-2xl p-5 border border-[#F0E4D0] shadow-md">
               <div className="flex flex-wrap gap-6">
                 <div>
                   <div className="text-4xl font-black text-gray-900">{summary.order_count}</div>
                   <div className="text-sm text-gray-500 mt-1">הזמנות</div>
                 </div>
                 <div>
-                  <div className="text-4xl font-black text-gray-900" dir="ltr">
+                  <div className="text-4xl font-black text-brand-600" dir="ltr">
                     {formatCurrency(summary.total_revenue)}
                   </div>
                   <div className="text-sm text-gray-500 mt-1">סה״כ</div>
@@ -190,7 +189,7 @@ export default function SummaryPage() {
             </section>
 
             {/* ── Payment breakdown ── */}
-            <section className="bg-white rounded-2xl p-4">
+            <section className="bg-white rounded-2xl p-4 border border-[#F0E4D0] shadow-md">
               <h2 className="font-bold mb-3">פירוט תשלומים</h2>
               <table className="w-full text-sm">
                 <tbody>
@@ -206,7 +205,7 @@ export default function SummaryPage() {
                     .map(({ label, key }) => ({ label, data: summary.payment_breakdown[key] }))
                     .filter(({ data }) => data.count > 0)
                     .map(({ label, data }) => (
-                      <tr key={label} className="border-b last:border-0">
+                      <tr key={label} className="border-b border-[#F0E4D0] last:border-0">
                         <td className="py-2 text-gray-600 w-24">{label}</td>
                         <td className="py-2 text-gray-500 w-32">
                           {data.count} {data.count === 1 ? 'הזמנה' : 'הזמנות'}
@@ -217,7 +216,7 @@ export default function SummaryPage() {
                       </tr>
                     ))}
                   {unpaid && unpaid.count > 0 && (
-                    <tr className="border-t-2">
+                    <tr className="border-t-2 border-[#F0E4D0]">
                       <td className="py-2 text-amber-600 font-semibold">טרם שולם</td>
                       <td className="py-2 text-gray-500">
                         {unpaid.count} {unpaid.count === 1 ? 'הזמנה' : 'הזמנות'}
@@ -231,7 +230,7 @@ export default function SummaryPage() {
                             <button
                               key={o.id}
                               onClick={() => navigate(`/orders/${o.id}`)}
-                              className="text-blue-600 hover:underline text-xs"
+                              className="text-brand-600 hover:text-brand-700 hover:underline text-xs"
                             >
                               ← #{o.daily_number}
                             </button>
@@ -245,12 +244,12 @@ export default function SummaryPage() {
             </section>
 
             {/* ── Items sold ── */}
-            <section className="bg-white rounded-2xl p-4">
+            <section className="bg-white rounded-2xl p-4 border border-[#F0E4D0] shadow-md">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-bold">פריטים שנמכרו</h2>
                 <button
                   onClick={() => setShowSizeBreakdown(v => !v)}
-                  className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                  className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700"
                 >
                   {showSizeBreakdown ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                   {showSizeBreakdown ? 'הסתר פירוט גדלים' : 'הצג פירוט גדלים'}
@@ -265,7 +264,7 @@ export default function SummaryPage() {
                     </div>
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-xs text-gray-400 border-b">
+                        <tr className="text-xs text-gray-400 border-b border-[#F0E4D0]">
                           <th className="pb-1 text-start font-normal">פריט</th>
                           <th className="pb-1 text-center font-normal w-16">כמות</th>
                           <th className="pb-1 text-end font-normal w-28">הכנסה</th>
@@ -273,7 +272,7 @@ export default function SummaryPage() {
                       </thead>
                       <tbody>
                         {items.map((item, i) => (
-                          <tr key={i} className="border-b last:border-0">
+                          <tr key={i} className="border-b border-[#F0E4D0] last:border-0">
                             <td className="py-1.5 text-gray-700">{item.name}</td>
                             <td className="py-1.5 text-center text-gray-600">{item.quantity}</td>
                             <td className="py-1.5 text-end font-medium" dir="ltr">
@@ -294,14 +293,14 @@ export default function SummaryPage() {
                 href={`/print/vouchers/${date}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors shadow-sm"
               >
                 <Printer size={18} />
                 הדפס שוברי לקוח של היום
               </a>
               <button
                 onClick={handleExportJson}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-[#E8D8C4] text-gray-700 hover:bg-[#FDFAF6] font-medium transition-colors"
               >
                 <Download size={16} />
                 יצוא JSON
@@ -314,7 +313,7 @@ export default function SummaryPage() {
       {/* FAB */}
       <button
         onClick={() => navigate('/orders/new')}
-        className="fixed bottom-6 start-6 z-20 bg-blue-600 text-white rounded-full h-14 w-14 shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+        className="fixed bottom-6 start-6 z-20 bg-brand-500 text-white rounded-full h-14 w-14 shadow-lg flex items-center justify-center hover:bg-brand-600 transition-colors"
         aria-label="הזמנה חדשה"
       >
         <Plus size={24} />

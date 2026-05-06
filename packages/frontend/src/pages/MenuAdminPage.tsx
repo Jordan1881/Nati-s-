@@ -63,26 +63,30 @@ function ItemModal({
     onSave(form)
   }
 
+  const inputClass = "w-full border border-[#E8D8C4] rounded-xl px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-colors"
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+      <div className="bg-white rounded-2xl shadow-xl border border-[#F0E4D0] w-full max-w-sm mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">{initial.name ? 'עריכת פריט' : 'פריט חדש'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700"><X size={20} /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors">
+            <X size={20} />
+          </button>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1">שם</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">שם</label>
             <input
-              className="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className={inputClass}
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">קטגוריה</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">קטגוריה</label>
             <select
-              className="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className={inputClass}
               value={form.category}
               onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
             >
@@ -90,21 +94,21 @@ function ItemModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">תווית יחידה (אופציונלי)</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">תווית יחידה (אופציונלי)</label>
             <input
-              className="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className={inputClass}
               placeholder='½ ק"ג, 1 ק"ג, ליח׳...'
               value={form.unit_label}
               onChange={e => setForm(f => ({ ...f, unit_label: e.target.value }))}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">מחיר (₪)</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">מחיר (₪)</label>
             <input
               type="number"
               min="0"
               step="0.5"
-              className="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className={inputClass}
               value={form.price}
               onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
               dir="ltr"
@@ -113,7 +117,7 @@ function ItemModal({
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <button
             type="submit"
-            className="bg-blue-600 text-white rounded-lg py-2 font-semibold hover:bg-blue-700 transition-colors mt-1"
+            className="bg-brand-500 text-white rounded-xl py-2.5 font-semibold hover:bg-brand-600 transition-colors shadow-sm mt-1"
           >
             שמור
           </button>
@@ -149,12 +153,12 @@ function SortableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 py-2 px-3 rounded-lg border bg-white ${
-        item.active ? '' : 'opacity-40'
+      className={`flex items-center gap-2 py-2 px-3 rounded-xl border bg-white transition-all ${
+        item.active ? 'border-[#F0E4D0]' : 'opacity-40 border-[#F0E4D0]'
       }`}
     >
       <button
-        className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing touch-none"
+        className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none transition-colors"
         {...attributes}
         {...listeners}
         aria-label="גרור לסידור מחדש"
@@ -165,15 +169,15 @@ function SortableRow({
       <div className="flex-1 min-w-0">
         <span className="font-medium">
           {item.name}
-          {item.unit_label && <span className="text-gray-500 text-sm me-1"> {item.unit_label}</span>}
+          {item.unit_label && <span className="text-gray-400 text-sm me-1"> {item.unit_label}</span>}
         </span>
       </div>
 
-      <span className="text-sm text-gray-700 whitespace-nowrap" dir="ltr">{price}</span>
+      <span className="text-sm text-gray-600 whitespace-nowrap" dir="ltr">{price}</span>
 
       <button
         onClick={() => onEdit(item)}
-        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+        className="p-1 text-gray-400 hover:text-brand-600 transition-colors"
         aria-label="ערוך"
       >
         <Pencil size={16} />
@@ -182,14 +186,14 @@ function SortableRow({
       {item.active ? (
         <button
           onClick={() => onToggleActive(item)}
-          className="text-xs px-2 py-1 rounded-md bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 transition-colors whitespace-nowrap"
+          className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 transition-colors whitespace-nowrap"
         >
           השבת
         </button>
       ) : (
         <button
           onClick={() => onToggleActive(item)}
-          className="text-xs px-2 py-1 rounded-md bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap"
+          className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap"
         >
           השב
         </button>
@@ -230,10 +234,10 @@ function CategorySection({
   return (
     <section className="mb-8">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold">{category}</h2>
+        <h2 className="text-lg font-bold text-gray-800">{category}</h2>
         <button
           onClick={() => onAdd(category)}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors"
         >
           + הוסף פריט
         </button>
@@ -311,24 +315,34 @@ export default function MenuAdminPage() {
     })
   }
 
-  if (isLoading) return <div dir="rtl" className="p-8 text-center text-gray-500">טוען תפריט...</div>
-  if (isError) return <div dir="rtl" className="p-8 text-center text-red-600">שגיאה בטעינת התפריט</div>
+  if (isLoading) return (
+    <div dir="rtl" className="min-h-screen bg-[#FDFAF6] flex items-center justify-center text-gray-400">
+      טוען תפריט...
+    </div>
+  )
+  if (isError) return (
+    <div dir="rtl" className="min-h-screen bg-[#FDFAF6] flex items-center justify-center text-red-600">
+      שגיאה בטעינת התפריט
+    </div>
+  )
 
   return (
-    <main className="max-w-2xl mx-auto p-6" dir="rtl">
-      <h1 className="text-2xl font-bold mb-6">ניהול תפריט</h1>
+    <main className="min-h-screen bg-[#FDFAF6]" dir="rtl">
+      <div className="max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6 text-gray-900">ניהול תפריט</h1>
 
-      {CATEGORIES.map(category => (
-        <CategorySection
-          key={category}
-          category={category}
-          items={items.filter(i => i.category === category)}
-          onEdit={item => setModal({ mode: 'edit', item })}
-          onToggleActive={handleToggleActive}
-          onAdd={cat => setModal({ mode: 'add', category: cat })}
-          onReorder={handleReorder}
-        />
-      ))}
+        {CATEGORIES.map(category => (
+          <CategorySection
+            key={category}
+            category={category}
+            items={items.filter(i => i.category === category)}
+            onEdit={item => setModal({ mode: 'edit', item })}
+            onToggleActive={handleToggleActive}
+            onAdd={cat => setModal({ mode: 'add', category: cat })}
+            onReorder={handleReorder}
+          />
+        ))}
+      </div>
 
       {modal && (
         <ItemModal

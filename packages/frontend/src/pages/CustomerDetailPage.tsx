@@ -13,7 +13,7 @@ function paymentBadge(order: ApiRecentOrder) {
   if (order.payment_status === 'paid') {
     return (
       <span className="text-xs bg-green-100 text-green-700 rounded-full px-2 py-0.5">
-        {order.payment_status === 'paid' ? 'שולם' : ''}
+        שולם
       </span>
     )
   }
@@ -32,11 +32,11 @@ export default function CustomerDetailPage() {
   })
 
   return (
-    <main dir="rtl" className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
+    <main dir="rtl" className="min-h-screen bg-[#FDFAF6]">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-[#F0E4D0] px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate('/customers')}
-          className="p-1.5 -ms-1.5 rounded-lg text-gray-600 hover:bg-gray-100"
+          className="p-1.5 -ms-1.5 rounded-lg text-gray-600 hover:bg-[#F5EFE6] transition-colors"
           aria-label="חזור"
         >
           <ArrowRight size={18} />
@@ -61,14 +61,14 @@ export default function CustomerDetailPage() {
         {customer && (
           <>
             {/* Stats */}
-            <section className="bg-white rounded-2xl p-5">
+            <section className="bg-white rounded-2xl p-5 border border-[#F0E4D0] shadow-md">
               <div className="flex flex-wrap gap-6">
                 <div>
                   <div className="text-3xl font-black text-gray-900">{customer.order_count}</div>
                   <div className="text-sm text-gray-500 mt-1">הזמנות</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-gray-900" dir="ltr">
+                  <div className="text-3xl font-black text-brand-600" dir="ltr">
                     {formatCurrency(customer.total_spent)}
                   </div>
                   <div className="text-sm text-gray-500 mt-1">סה״כ</div>
@@ -82,7 +82,7 @@ export default function CustomerDetailPage() {
 
             {/* Favorite items */}
             {customer.favorite_items.length > 0 && (
-              <section className="bg-white rounded-2xl p-4">
+              <section className="bg-white rounded-2xl p-4 border border-[#F0E4D0] shadow-md">
                 <h2 className="font-bold mb-3">פריטים מועדפים</h2>
                 <div className="flex flex-col gap-2">
                   {customer.favorite_items.map((item, i) => (
@@ -99,14 +99,14 @@ export default function CustomerDetailPage() {
 
             {/* Recent orders */}
             {customer.recent_orders.length > 0 && (
-              <section className="bg-white rounded-2xl p-4">
+              <section className="bg-white rounded-2xl p-4 border border-[#F0E4D0] shadow-md">
                 <h2 className="font-bold mb-3">הזמנות אחרונות</h2>
                 <div className="flex flex-col gap-1">
                   {customer.recent_orders.map(order => (
                     <button
                       key={order.id}
                       onClick={() => navigate(`/orders/${order.id}`)}
-                      className="flex items-center justify-between py-2.5 border-b last:border-0 hover:bg-gray-50 rounded px-1 w-full text-start"
+                      className="flex items-center justify-between py-2.5 border-b border-[#F0E4D0] last:border-0 hover:bg-[#FDFAF6] rounded px-1 w-full text-start transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-gray-700">
