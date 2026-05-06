@@ -13,7 +13,7 @@ export const createOrderSchema = z.object({
   customer_phone: z.string().min(1),
   pickup_time: z.string().nullable().optional(),
   status: z.string().nullable().optional(),
-  payment_method: z.enum(['cash', 'credit']).nullable().optional(),
+  payment_method: z.enum(['cash', 'credit', 'bit', 'paybox', 'check']).nullable().optional(),
   payment_status: z.enum(['paid', 'unpaid']).nullable().optional(),
   notes: z.string().nullable().optional(),
   lines: z.array(orderLineInputSchema).min(1),
@@ -24,7 +24,7 @@ export const patchOrderSchema = z.object({
   customer_phone: z.string().min(1).optional(),
   pickup_time: z.string().nullable().optional(),
   status: z.string().nullable().optional(),
-  payment_method: z.enum(['cash', 'credit']).nullable().optional(),
+  payment_method: z.enum(['cash', 'credit', 'bit', 'paybox', 'check']).nullable().optional(),
   payment_status: z.enum(['paid', 'unpaid']).nullable().optional(),
   notes: z.string().nullable().optional(),
 })

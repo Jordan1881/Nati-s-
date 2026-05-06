@@ -163,7 +163,7 @@ export async function updateOrderHeader(
     customer_phone?: string
     pickup_time?: string | null
     status?: string | null
-    payment_method?: 'cash' | 'credit' | null
+    payment_method?: 'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null
     payment_status?: 'paid' | 'unpaid' | null
     notes?: string | null
   }
@@ -273,7 +273,7 @@ export async function createOrder(data: {
   customer_phone: string
   pickup_time?: string | null
   status?: string | null
-  payment_method?: 'cash' | 'credit' | null
+  payment_method?: 'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null
   payment_status?: 'paid' | 'unpaid' | null
   notes?: string | null
   lines: { menu_item_id: number; quantity: number }[]

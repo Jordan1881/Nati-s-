@@ -6,7 +6,7 @@ import type { ApiMenuItem, ApiOrderWithLines } from '@natis/shared'
 import { ChevronRight, Pencil, X, Trash2, Printer } from 'lucide-react'
 import { api } from '../api/client'
 
-const CATEGORIES = ['תבשילים', 'חומוס', 'סלטים'] as const
+const CATEGORIES = ['עיקריות', 'תוספות', 'סלטים', 'חומוס'] as const
 
 const PICKUP_TIMES: string[] = []
 for (let h = 9; h <= 12; h++) {
@@ -31,7 +31,7 @@ export default function OrderDetailPage() {
   const [editPickupTime, setEditPickupTime] = useState('')
   const [editStatus, setEditStatus] = useState('')
   const [editNotes, setEditNotes] = useState('')
-  const [editPayment, setEditPayment] = useState<'cash' | 'credit' | null>(null)
+  const [editPayment, setEditPayment] = useState<'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null>(null)
 
   // Lines edit cart
   const [cart, setCart] = useState<Record<number, number>>({})
@@ -55,7 +55,7 @@ export default function OrderDetailPage() {
       setEditPickupTime(order.pickup_time ?? '')
       setEditStatus(order.status ?? '')
       setEditNotes(order.notes ?? '')
-      setEditPayment(order.payment_method as 'cash' | 'credit' | null)
+      setEditPayment(order.payment_method as 'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null)
       const initialCart: Record<number, number> = {}
       for (const line of order.lines) {
         initialCart[line.menu_item_id] = line.quantity
@@ -153,12 +153,6 @@ export default function OrderDetailPage() {
     linesMutation.reset()
   }
 
-  // Banner: updated_at vs print timestamps. This uses a coarser comparison —
-  // header-only edits (status, payment) also bump updated_at and will show
-  // the banner. Acceptable: the banner is informational, not a gate.
-  const showKitchenBanner =
-    !!order?.kitchen_printed_at &&
-    new Date(order.updated_at) > new Date(order.kitchen_printed_at)
   const showCustomerBanner =
     !!order?.customer_printed_at &&
     new Date(order.updated_at) > new Date(order.customer_printed_at)
@@ -228,23 +222,7 @@ export default function OrderDetailPage() {
       </header>
 
       <div className="max-w-3xl mx-auto p-4 flex flex-col gap-4">
-        {/* ── Edit-after-print banners ── */}
-        {showKitchenBanner && (
-          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <p className="text-amber-800 text-sm font-medium">
-              ⚠️ ההזמנה עודכנה אחרי הדפסה — יש להדפיס מחדש את הבון לבישול
-            </p>
-            <a
-              href={`/print/order/${order.id}/kitchen`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition-colors whitespace-nowrap"
-            >
-              <Printer size={14} />
-              הדפס שוב את בון המטבח
-            </a>
-          </div>
-        )}
+        {/* ── Edit-after-print banner ── */}
         {showCustomerBanner && (
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <p className="text-amber-800 text-sm font-medium">
@@ -340,11 +318,14 @@ export default function OrderDetailPage() {
 
               <div>
                 <p className="text-sm font-medium mb-2">תשלום</p>
-                <div className="flex gap-4 text-sm">
+                <div className="flex flex-wrap gap-3 text-sm">
                   {(
                     [
                       ['cash', 'מזומן'],
                       ['credit', 'אשראי'],
+                      ['bit', 'ביט'],
+                      ['paybox', 'פייבוקס'],
+                      ['check', "צ'ק"],
                       [null, 'טרם'],
                     ] as const
                   ).map(([val, label]) => (
@@ -529,7 +510,7 @@ export default function OrderDetailPage() {
                   <div className="text-xs text-gray-400 mb-0.5">תשלום</div>
                   <div>
                     {order.payment_status === 'paid'
-                      ? `שולם — ${order.payment_method === 'cash' ? 'מזומן' : 'אשראי'}`
+                      ? `שולם — ${{ cash: 'מזומן', credit: 'אשראי', bit: 'ביט', paybox: 'פייבוקס', check: "צ'ק" }[order.payment_method ?? ''] ?? order.payment_method}`
                       : 'טרם שולם'}
                   </div>
                 </div>
@@ -542,9 +523,7 @@ export default function OrderDetailPage() {
                 <div>
                   <div className="text-xs text-gray-400 mb-0.5">הדפסה</div>
                   <div>
-                    {order.kitchen_printed_at && order.customer_printed_at
-                      ? 'הודפס'
-                      : 'לא הודפס'}
+                    {order.customer_printed_at ? 'הודפס' : 'לא הודפס'}
                   </div>
                 </div>
                 {order.notes && (
@@ -584,45 +563,18 @@ export default function OrderDetailPage() {
             <section className="bg-white rounded-2xl p-4 flex flex-col gap-2">
               <h2 className="font-bold mb-1">הדפסה</h2>
               <a
-                href={`/print/order/${order.id}`}
+                href={`/print/order/${order.id}/customer`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors"
               >
                 <Printer size={15} />
-                הדפס שניהם
+                הדפס שובר לקוח
               </a>
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href={`/print/order/${order.id}/kitchen`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm transition-colors"
-                >
-                  הדפס שוב — בון מטבח
-                </a>
-                <a
-                  href={`/print/order/${order.id}/customer`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm transition-colors"
-                >
-                  הדפס שוב — שובר לקוח
-                </a>
-              </div>
-              {(order.kitchen_printed_at || order.customer_printed_at) && (
-                <div className="flex flex-col gap-0.5 pt-1">
-                  {order.kitchen_printed_at && (
-                    <p className="text-xs text-gray-400">
-                      בון מטבח הודפס לראשונה ב-{fmtPrintTime(order.kitchen_printed_at)}
-                    </p>
-                  )}
-                  {order.customer_printed_at && (
-                    <p className="text-xs text-gray-400">
-                      שובר לקוח הודפס לראשונה ב-{fmtPrintTime(order.customer_printed_at)}
-                    </p>
-                  )}
-                </div>
+              {order.customer_printed_at && (
+                <p className="text-xs text-gray-400 pt-1">
+                  הודפס לראשונה ב-{fmtPrintTime(order.customer_printed_at)}
+                </p>
               )}
             </section>
           </>

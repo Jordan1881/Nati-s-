@@ -8,14 +8,16 @@ export async function getSummary(date: string) {
     .from(orders)
     .where(eq(orders.orderDate, date))
 
+  const PAYMENT_METHODS = ['cash', 'credit', 'bit', 'paybox', 'check'] as const
+  type PaymentMethod = typeof PAYMENT_METHODS[number]
+
   if (orderRows.length === 0) {
     return {
       date,
       order_count: 0,
       total_revenue: 0,
       payment_breakdown: {
-        cash: { count: 0, total: 0 },
-        credit: { count: 0, total: 0 },
+        ...Object.fromEntries(PAYMENT_METHODS.map(m => [m, { count: 0, total: 0 }])) as Record<PaymentMethod, { count: number; total: number }>,
         unpaid: { count: 0, total: 0, orders: [] as { id: number; daily_number: number }[] },
       },
       items_sold: [] as ItemSold[],
@@ -25,20 +27,15 @@ export async function getSummary(date: string) {
 
   const total_revenue = orderRows.reduce((s, o) => s + parseFloat(o.totalPrice), 0)
 
-  const cashOrders = orderRows.filter(o => o.paymentMethod === 'cash' && o.paymentStatus === 'paid')
-  const creditOrders = orderRows.filter(o => o.paymentMethod === 'credit' && o.paymentStatus === 'paid')
   const unpaidOrders = orderRows.filter(o => o.paymentStatus !== 'paid')
 
   const payment_breakdown = {
-    cash: {
-      count: cashOrders.length,
-      total: cashOrders.reduce((s, o) => s + parseFloat(o.totalPrice), 0),
-    },
-    credit: {
-      count: creditOrders.length,
-      total: creditOrders.reduce((s, o) => s + parseFloat(o.totalPrice), 0),
-    },
-    // Spec uses order_ids but we include daily_number so the UI can display "#12 → /orders/87"
+    ...Object.fromEntries(
+      PAYMENT_METHODS.map(m => {
+        const group = orderRows.filter(o => o.paymentMethod === m && o.paymentStatus === 'paid')
+        return [m, { count: group.length, total: group.reduce((s, o) => s + parseFloat(o.totalPrice), 0) }]
+      })
+    ) as Record<PaymentMethod, { count: number; total: number }>,
     unpaid: {
       count: unpaidOrders.length,
       total: unpaidOrders.reduce((s, o) => s + parseFloat(o.totalPrice), 0),

@@ -19,7 +19,7 @@ import { GripVertical, Pencil, X } from 'lucide-react'
 import type { ApiMenuItem } from '@natis/shared'
 import { api } from '../api/client'
 
-const CATEGORIES = ['תבשילים', 'חומוס', 'סלטים'] as const
+const CATEGORIES = ['עיקריות', 'תוספות', 'סלטים', 'חומוס'] as const
 
 function useMenuItems() {
   return useQuery<ApiMenuItem[]>({

@@ -5,17 +5,17 @@ import { menuItems } from './schema'
 // NATI's menu — בישול ביתי וחומוס, קיבוץ מחניים
 // Each size variant is its own row per the architectural decision (Option A).
 const menu = [
-  // ─── תבשילים ─────────────────────────────────────────────────────────────
-  { name: 'ברסקט עגל',    category: 'תבשילים', unitLabel: '½ ק״ג', price: '55.00',  displayOrder: 0 },
-  { name: 'ברסקט עגל',    category: 'תבשילים', unitLabel: '1 ק״ג',  price: '110.00', displayOrder: 1 },
-  { name: 'כתף כבש',      category: 'תבשילים', unitLabel: '½ ק״ג', price: '65.00',  displayOrder: 2 },
-  { name: 'כתף כבש',      category: 'תבשילים', unitLabel: '1 ק״ג',  price: '130.00', displayOrder: 3 },
-  { name: 'עוף שלם',      category: 'תבשילים', unitLabel: null,      price: '70.00',  displayOrder: 4 },
-  { name: 'עוף חצי',      category: 'תבשילים', unitLabel: null,      price: '38.00',  displayOrder: 5 },
-  { name: 'כרעיים',       category: 'תבשילים', unitLabel: 'ליח׳',   price: '22.00',  displayOrder: 6 },
-  { name: 'שניצל עוף',    category: 'תבשילים', unitLabel: 'ליח׳',   price: '18.00',  displayOrder: 7 },
-  { name: 'קציצות בשר',   category: 'תבשילים', unitLabel: '½ ק״ג', price: '42.00',  displayOrder: 8 },
-  { name: 'קציצות בשר',   category: 'תבשילים', unitLabel: '1 ק״ג',  price: '80.00',  displayOrder: 9 },
+  // ─── עיקריות ─────────────────────────────────────────────────────────────
+  { name: 'ברסקט עגל',    category: 'עיקריות', unitLabel: '½ ק״ג', price: '55.00',  displayOrder: 0 },
+  { name: 'ברסקט עגל',    category: 'עיקריות', unitLabel: '1 ק״ג',  price: '110.00', displayOrder: 1 },
+  { name: 'כתף כבש',      category: 'עיקריות', unitLabel: '½ ק״ג', price: '65.00',  displayOrder: 2 },
+  { name: 'כתף כבש',      category: 'עיקריות', unitLabel: '1 ק״ג',  price: '130.00', displayOrder: 3 },
+  { name: 'עוף שלם',      category: 'עיקריות', unitLabel: null,      price: '70.00',  displayOrder: 4 },
+  { name: 'עוף חצי',      category: 'עיקריות', unitLabel: null,      price: '38.00',  displayOrder: 5 },
+  { name: 'כרעיים',       category: 'עיקריות', unitLabel: 'ליח׳',   price: '22.00',  displayOrder: 6 },
+  { name: 'שניצל עוף',    category: 'עיקריות', unitLabel: 'ליח׳',   price: '18.00',  displayOrder: 7 },
+  { name: 'קציצות בשר',   category: 'עיקריות', unitLabel: '½ ק״ג', price: '42.00',  displayOrder: 8 },
+  { name: 'קציצות בשר',   category: 'עיקריות', unitLabel: '1 ק״ג',  price: '80.00',  displayOrder: 9 },
 
   // ─── חומוס ───────────────────────────────────────────────────────────────
   { name: 'חומוס',         category: 'חומוס', unitLabel: 'מנה',      price: '25.00',  displayOrder: 0 },

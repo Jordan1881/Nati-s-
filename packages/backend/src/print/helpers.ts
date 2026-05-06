@@ -10,7 +10,7 @@ export function formatILS(amount: number): string {
   return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(amount)
 }
 
-const CATEGORY_ORDER = ['תבשילים', 'חומוס', 'סלטים']
+const CATEGORY_ORDER = ['עיקריות', 'תוספות', 'סלטים', 'חומוס']
 
 export function sortCategories(categories: string[]): string[] {
   return [...categories].sort((a, b) => {

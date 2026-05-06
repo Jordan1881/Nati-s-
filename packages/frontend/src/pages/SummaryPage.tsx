@@ -40,6 +40,9 @@ interface Summary {
   payment_breakdown: {
     cash: PaymentGroup
     credit: PaymentGroup
+    bit: PaymentGroup
+    paybox: PaymentGroup
+    check: PaymentGroup
     unpaid: UnpaidGroup
   }
   items_sold: ItemSold[]
@@ -48,7 +51,7 @@ interface Summary {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-const CATEGORY_ORDER = ['תבשילים', 'חומוס', 'סלטים']
+const CATEGORY_ORDER = ['עיקריות', 'תוספות', 'סלטים', 'חומוס']
 
 function sortCats(cats: string[]): string[] {
   return [...cats].sort((a, b) => {
@@ -191,20 +194,28 @@ export default function SummaryPage() {
               <h2 className="font-bold mb-3">פירוט תשלומים</h2>
               <table className="w-full text-sm">
                 <tbody>
-                  {[
-                    { label: 'מזומן', data: summary.payment_breakdown.cash },
-                    { label: 'אשראי', data: summary.payment_breakdown.credit },
-                  ].map(({ label, data }) => (
-                    <tr key={label} className="border-b last:border-0">
-                      <td className="py-2 text-gray-600 w-24">{label}</td>
-                      <td className="py-2 text-gray-500 w-32">
-                        {data.count} {data.count === 1 ? 'הזמנה' : 'הזמנות'}
-                      </td>
-                      <td className="py-2 font-medium text-end" dir="ltr">
-                        {formatCurrency(data.total)}
-                      </td>
-                    </tr>
-                  ))}
+                  {(
+                    [
+                      { label: 'מזומן', key: 'cash' },
+                      { label: 'אשראי', key: 'credit' },
+                      { label: 'ביט', key: 'bit' },
+                      { label: 'פייבוקס', key: 'paybox' },
+                      { label: "צ'ק", key: 'check' },
+                    ] as const
+                  )
+                    .map(({ label, key }) => ({ label, data: summary.payment_breakdown[key] }))
+                    .filter(({ data }) => data.count > 0)
+                    .map(({ label, data }) => (
+                      <tr key={label} className="border-b last:border-0">
+                        <td className="py-2 text-gray-600 w-24">{label}</td>
+                        <td className="py-2 text-gray-500 w-32">
+                          {data.count} {data.count === 1 ? 'הזמנה' : 'הזמנות'}
+                        </td>
+                        <td className="py-2 font-medium text-end" dir="ltr">
+                          {formatCurrency(data.total)}
+                        </td>
+                      </tr>
+                    ))}
                   {unpaid && unpaid.count > 0 && (
                     <tr className="border-t-2">
                       <td className="py-2 text-amber-600 font-semibold">טרם שולם</td>
@@ -280,13 +291,13 @@ export default function SummaryPage() {
             {/* ── Actions ── */}
             <section className="flex flex-col gap-2">
               <a
-                href={`/print/bonim/${date}`}
+                href={`/print/vouchers/${date}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors"
               >
                 <Printer size={18} />
-                הדפס קובץ בונים של היום
+                הדפס שוברי לקוח של היום
               </a>
               <button
                 onClick={handleExportJson}

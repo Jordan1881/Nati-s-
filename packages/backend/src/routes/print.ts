@@ -83,6 +83,35 @@ router.get('/order/:id/customer', async (req, res) => {
   res.send(wrapDocument(`שובר לקוח — הזמנה #${order.dailyNumber}`, renderCustomerSlip(order, lines)))
 })
 
+// GET /print/vouchers/:date — all customer slips for date, sorted by daily_number ASC, no timestamp updates
+router.get('/vouchers/:date', async (req, res) => {
+  const { date } = req.params
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    res.status(400).send('Invalid date format. Use YYYY-MM-DD.')
+    return
+  }
+
+  const rows = await svc.getOrdersWithLinesForDate(date)
+
+  const formattedDate = new Date(date + 'T12:00:00').toLocaleDateString('he-IL', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    timeZone: 'Asia/Jerusalem',
+  })
+
+  const body =
+    rows.length === 0
+      ? '<div style="font-size:18pt;text-align:center;padding:20mm">אין הזמנות ליום זה</div>'
+      : rows
+          .map((row) => renderCustomerSlip(toPrintOrder(row), toPrintLines(row.lines)))
+          .join('\n')
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
+  res.send(wrapDocument(`שוברי לקוח — ${formattedDate}`, body))
+})
+
 // GET /print/bonim/:date — all kitchen bons for date, sorted by daily_number ASC, no timestamp updates
 router.get('/bonim/:date', async (req, res) => {
   const { date } = req.params

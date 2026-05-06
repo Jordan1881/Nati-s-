@@ -20,9 +20,12 @@ export function renderCustomerSlip(order: PrintOrder, lines: PrintLine[]): strin
     })
     .join('')
 
+  const paymentLabels: Record<string, string> = {
+    cash: 'מזומן', credit: 'אשראי', bit: 'ביט', paybox: 'פייבוקס', check: "צ'ק",
+  }
   const paymentHtml =
     order.paymentStatus === 'paid'
-      ? `<div class="payment">תשלום: ${order.paymentMethod === 'cash' ? 'מזומן' : 'אשראי'} &#10003;</div>`
+      ? `<div class="payment">תשלום: ${paymentLabels[order.paymentMethod ?? ''] ?? order.paymentMethod} &#10003;</div>`
       : ''
 
   return `<section class="page customer-slip">

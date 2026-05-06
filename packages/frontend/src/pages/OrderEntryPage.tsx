@@ -8,7 +8,7 @@ import { api } from '../api/client'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const CATEGORIES = ['תבשילים', 'חומוס', 'סלטים'] as const
+const CATEGORIES = ['עיקריות', 'תוספות', 'סלטים', 'חומוס'] as const
 
 const PICKUP_TIMES: string[] = []
 for (let h = 9; h <= 12; h++) {
@@ -114,9 +114,9 @@ function CartPanel({
   cart: Record<number, number>
   menuItemsById: Map<number, ApiMenuItem>
   notes: string
-  paymentOption: 'cash' | 'credit' | null
+  paymentOption: 'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null
   onNotesChange: (v: string) => void
-  onPaymentChange: (v: 'cash' | 'credit' | null) => void
+  onPaymentChange: (v: 'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null) => void
   onSave: () => void
   onSaveAndPrint: () => void
   saving: boolean
@@ -168,8 +168,17 @@ function CartPanel({
 
       <div>
         <p className="text-sm font-medium mb-2">תשלום</p>
-        <div className="flex gap-4 text-sm">
-          {([['cash', 'מזומן'], ['credit', 'אשראי'], [null, 'טרם']] as const).map(([val, label]) => (
+        <div className="flex flex-wrap gap-3 text-sm">
+          {(
+            [
+              ['cash', 'מזומן'],
+              ['credit', 'אשראי'],
+              ['bit', 'ביט'],
+              ['paybox', 'פייבוקס'],
+              ['check', "צ'ק"],
+              [null, 'טרם'],
+            ] as const
+          ).map(([val, label]) => (
             <label key={label} className="flex items-center gap-1 cursor-pointer">
               <input
                 type="radio"
@@ -196,7 +205,7 @@ function CartPanel({
         disabled={!canSubmit || saving}
         className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        שמור והדפס
+        שמור והדפס שובר
       </button>
       <button
         onClick={onSave}
@@ -225,7 +234,7 @@ export default function OrderEntryPage() {
   const [orderDate, setOrderDate] = useState(activeSaleDateStr)
   const [pickupTime, setPickupTime] = useState('09:30')
   const [notes, setNotes] = useState('')
-  const [paymentOption, setPaymentOption] = useState<'cash' | 'credit' | null>(null)
+  const [paymentOption, setPaymentOption] = useState<'cash' | 'credit' | 'bit' | 'paybox' | 'check' | null>(null)
   const [cart, setCart] = useState<Record<number, number>>({})
   const [activeCategory, setActiveCategory] = useState<string>(CATEGORIES[0])
   const [cartOpen, setCartOpen] = useState(false)
@@ -307,7 +316,7 @@ export default function OrderEntryPage() {
     if (!canSubmit) return
     createOrder.mutate(buildPayload(), {
       onSuccess: order => {
-        window.open(`/print/order/${order.id}`, '_blank')
+        window.open(`/print/order/${order.id}/customer`, '_blank')
         navigate('/orders/today', {
           state: { toast: `הזמנה #${order.daily_number} נשמרה` },
         })

@@ -8,6 +8,13 @@
       "when": 1777926958089,
       "tag": "0000_wise_mephistopheles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1746518400000,
+      "tag": "0001_rename_category_main",
+      "breakpoints": true
     }
   ]
 }
