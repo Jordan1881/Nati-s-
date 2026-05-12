@@ -129,4 +129,5 @@ export interface ApiRecentOrder {
 export interface ApiCustomerDetail extends ApiCustomerSummary {
   favorite_items: ApiFavoriteItem[]
   recent_orders: ApiRecentOrder[]
+  is_hidden: boolean
 }

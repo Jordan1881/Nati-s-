@@ -1,7 +1,7 @@
 import { escHtml, formatILS } from './helpers.js'
 import type { PrintLine, PrintOrder } from './types.js'
 
-export function renderCustomerSlip(order: PrintOrder, lines: PrintLine[]): string {
+export function renderCustomerSlip(order: PrintOrder, lines: PrintLine[], compact = false): string {
   const pickupHtml = order.pickupTime
     ? `<div class="info-row"><span class="label">זמן איסוף:</span> <span class="ltr">${escHtml(order.pickupTime)}</span></div>`
     : ''
@@ -28,7 +28,7 @@ export function renderCustomerSlip(order: PrintOrder, lines: PrintLine[]): strin
       ? `<div class="payment">תשלום: ${paymentLabels[order.paymentMethod ?? ''] ?? order.paymentMethod} &#10003;</div>`
       : ''
 
-  return `<section class="page customer-slip">
+  return `<section class="${compact ? 'page customer-slip compact' : 'page customer-slip'}">
     <div class="restaurant-header">NATI&#x2019;s &#x202B;בישול ביתי &amp; חומוס</div>
     <hr class="divider" />
     <div class="order-number">הזמנה #${order.dailyNumber}</div>

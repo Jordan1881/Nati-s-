@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { formatCurrency, formatDate } from '@natis/shared'
 import type { ApiCustomerDetail, ApiRecentOrder } from '@natis/shared'
 import { ArrowRight, ChevronLeft } from 'lucide-react'
@@ -25,10 +25,30 @@ export default function CustomerDetailPage() {
   const navigate = useNavigate()
   const decodedPhone = decodeURIComponent(phone ?? '')
 
+  const queryClient = useQueryClient()
+
   const { data: customer, isLoading, isError } = useQuery<ApiCustomerDetail>({
     queryKey: ['customer', decodedPhone],
     queryFn: () => api.customers.getByPhone(decodedPhone),
     retry: false,
+  })
+
+  const hideMutation = useMutation({
+    mutationFn: () => api.customers.hide(decodedPhone),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['customer', decodedPhone] })
+      navigate('/customers')
+    },
+  })
+
+  const unhideMutation = useMutation({
+    mutationFn: () => api.customers.unhide(decodedPhone),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['customer', decodedPhone] })
+      navigate('/customers')
+    },
   })
 
   return (
@@ -125,6 +145,27 @@ export default function CustomerDetailPage() {
                 </div>
               </section>
             )}
+
+            {/* Hide / restore */}
+            <div className="pb-4">
+              {customer.is_hidden ? (
+                <button
+                  onClick={() => unhideMutation.mutate()}
+                  disabled={unhideMutation.isPending}
+                  className="w-full rounded-xl border border-[#E8D8C4] bg-white py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F5EFE6] transition-colors disabled:opacity-50"
+                >
+                  {unhideMutation.isPending ? 'מעדכן...' : 'שחזר לקוח'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => hideMutation.mutate()}
+                  disabled={hideMutation.isPending}
+                  className="w-full rounded-xl border border-red-200 bg-white py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  {hideMutation.isPending ? 'מסתיר...' : 'הסתר לקוח'}
+                </button>
+              )}
+            </div>
           </>
         )}
       </div>

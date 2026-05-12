@@ -55,6 +55,11 @@ export const orders = pgTable(
   })
 )
 
+export const hiddenCustomers = pgTable('hidden_customers', {
+  phone: text('phone').primaryKey(),
+  hiddenAt: timestamp('hidden_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const orderLines = pgTable(
   'order_lines',
   {

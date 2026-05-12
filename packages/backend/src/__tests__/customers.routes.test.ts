@@ -4,6 +4,9 @@ import request from 'supertest'
 vi.mock('../services/customers.service', () => ({
   getCustomers: vi.fn(),
   getCustomerByPhone: vi.fn(),
+  hideCustomer: vi.fn(),
+  unhideCustomer: vi.fn(),
+  getHiddenCustomers: vi.fn(),
 }))
 
 import app from '../index'
@@ -37,6 +40,7 @@ const MOCK_DETAIL = {
   recent_orders: [
     { id: 10, daily_number: 3, order_date: '2026-05-02', total_price: 180, status: null, payment_status: 'paid' },
   ],
+  is_hidden: false,
 }
 
 let authCookies: string[]

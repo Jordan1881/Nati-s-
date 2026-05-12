@@ -101,12 +101,19 @@ router.get('/vouchers/:date', async (req, res) => {
     timeZone: 'Asia/Jerusalem',
   })
 
-  const body =
-    rows.length === 0
-      ? '<div style="font-size:18pt;text-align:center;padding:20mm">אין הזמנות ליום זה</div>'
-      : rows
-          .map((row) => renderCustomerSlip(toPrintOrder(row), toPrintLines(row.lines)))
-          .join('\n')
+  let body: string
+  if (rows.length === 0) {
+    body = '<div style="font-size:18pt;text-align:center;padding:20mm">אין הזמנות ליום זה</div>'
+  } else {
+    const chunks: (typeof rows)[] = []
+    for (let i = 0; i < rows.length; i += 3) chunks.push(rows.slice(i, i + 3))
+    body = chunks.map(chunk => {
+      const slips = chunk
+        .map(row => renderCustomerSlip(toPrintOrder(row), toPrintLines(row.lines), true))
+        .join('\n<div class="slip-cut"></div>\n')
+      return `<div class="voucher-page">${slips}</div>`
+    }).join('\n')
+  }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.send(wrapDocument(`שוברי לקוח — ${formattedDate}`, body))

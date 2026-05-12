@@ -1,20 +1,32 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { formatCurrency, formatDate } from '@natis/shared'
 import type { ApiCustomerSummary } from '@natis/shared'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, ChevronDown } from 'lucide-react'
 import { api } from '../api/client'
 
 export default function CustomersListPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<'orders' | 'spent'>('orders')
+  const [showHidden, setShowHidden] = useState(false)
 
   const { data: customers = [], isLoading } = useQuery<ApiCustomerSummary[]>({
     queryKey: ['customers', search, sort],
     queryFn: () => api.customers.list({ search: search || undefined, sort }),
     placeholderData: prev => prev,
+  })
+
+  const { data: hiddenCustomers = [] } = useQuery<ApiCustomerSummary[]>({
+    queryKey: ['customers', 'hidden'],
+    queryFn: () => api.customers.listHidden(),
+  })
+
+  const unhideMutation = useMutation({
+    mutationFn: (phone: string) => api.customers.unhide(phone),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['customers'] }),
   })
 
   return (
@@ -83,6 +95,47 @@ export default function CustomersListPage() {
           ))}
         </div>
       </div>
+
+      {hiddenCustomers.length > 0 && (
+          <div className="max-w-2xl mx-auto px-4 pb-6">
+            <button
+              onClick={() => setShowHidden(v => !v)}
+              className="flex items-center gap-2 text-sm text-gray-500 py-2 w-full"
+            >
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${showHidden ? 'rotate-180' : ''}`}
+              />
+              <span>לקוחות מוסתרים</span>
+              <span className="ms-1 rounded-full bg-gray-200 text-gray-600 text-xs px-2 py-0.5">
+                {hiddenCustomers.length}
+              </span>
+            </button>
+
+            {showHidden && (
+              <div className="flex flex-col gap-2 mt-1">
+                {hiddenCustomers.map(c => (
+                  <div
+                    key={c.customer_phone}
+                    className="bg-white rounded-xl p-3 text-start border border-[#F0E4D0] shadow-sm flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-700 truncate">{c.customer_name}</div>
+                      <div className="text-sm text-gray-400 mt-0.5" dir="ltr">{c.customer_phone}</div>
+                    </div>
+                    <button
+                      onClick={() => unhideMutation.mutate(c.customer_phone)}
+                      disabled={unhideMutation.isPending}
+                      className="shrink-0 rounded-lg border border-[#E8D8C4] px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-[#F5EFE6] transition-colors disabled:opacity-50"
+                    >
+                      שחזר
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
       <button
         onClick={() => navigate('/orders/new')}

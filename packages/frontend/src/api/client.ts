@@ -89,5 +89,14 @@ export const api = {
         `/api/customers?phone=${encodeURIComponent(phone)}`
       )
     },
+    hide(phone: string) {
+      return apiFetch<void>(`/api/customers/${encodeURIComponent(phone)}/hide`, { method: 'POST' })
+    },
+    unhide(phone: string) {
+      return apiFetch<void>(`/api/customers/${encodeURIComponent(phone)}/hide`, { method: 'DELETE' })
+    },
+    listHidden() {
+      return apiFetch<ApiCustomerSummary[]>('/api/customers?hidden=true')
+    },
   },
 }

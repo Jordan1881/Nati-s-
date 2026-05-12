@@ -113,6 +113,29 @@ html, body {
   border-top: 1px solid #ccc;
 }
 
+/* ── Customer slip — compact (3-up voucher layout) ────────── */
+.customer-slip.compact .restaurant-header { font-size: 12pt; margin-bottom: 2mm; }
+.customer-slip.compact .order-number      { font-size: 13pt; margin: 1mm 0; }
+.customer-slip.compact .info-row          { font-size: 9pt; margin: 0.5mm 0; }
+.customer-slip.compact .slip-line         { font-size: 8pt; margin: 0.5mm 0; }
+.customer-slip.compact .total             { font-size: 12pt; margin: 2mm 0; }
+.customer-slip.compact .payment           { font-size: 9pt; margin: 1mm 0; }
+.customer-slip.compact .slip-footer       { padding-top: 2mm; }
+.customer-slip.compact .divider           { margin: 1.5mm 0; }
+
+/* ── Voucher page wrapper (groups up to 3 compact slips) ───── */
+.voucher-page {
+  display: flex;
+  flex-direction: column;
+  border: 1px dashed #aaa;
+  padding: 5mm;
+  margin-bottom: 8mm;
+}
+.voucher-page:last-child { margin-bottom: 0; }
+
+/* ── Cut line between slips on same page ───────────────────── */
+.slip-cut { border-top: 1px dashed #555; margin: 2mm 0; width: 100%; }
+
 /* ── Shared ──────────────────────────────────── */
 .divider { margin: 4mm 0; border: none; border-top: 1px solid #000; }
 .ltr { direction: ltr; unicode-bidi: isolate; display: inline; }
@@ -135,5 +158,10 @@ html, body {
   }
   .page:last-child { page-break-after: auto; }
   .notes { background: none; }
+  .customer-slip.compact { padding: 0; min-height: 0; }
+  .voucher-page { page-break-after: always; border: none; margin: 0; padding: 0; }
+  .voucher-page:last-child { page-break-after: auto; }
+  /* cancel per-slip page break — let the voucher-page wrapper fire it instead */
+  .voucher-page .page { page-break-after: avoid; page-break-inside: avoid; }
 }
 `
