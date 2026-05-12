@@ -46,6 +46,8 @@ const MOCK_DETAIL = {
 let authCookies: string[]
 
 beforeAll(async () => {
+  process.env.APP_PASSWORD = 'test-password'
+  process.env.COOKIE_SECRET = 'test-secret'
   const res = await request(app).post('/auth/login').send({ password: 'test-password' })
   authCookies = res.headers['set-cookie'] as unknown as string[]
 })
@@ -112,5 +114,61 @@ describe('GET /api/customers?phone=:phone', () => {
       .set('Cookie', authCookies)
     const items: { quantity: number }[] = res.body.favorite_items
     expect(items[0].quantity).toBeGreaterThanOrEqual(items[1].quantity)
+  })
+})
+
+describe('GET /api/customers?hidden=true', () => {
+  it('returns 200 with hidden customer list', async () => {
+    vi.mocked(svc.getHiddenCustomers).mockResolvedValue(MOCK_CUSTOMERS)
+    const res = await request(app).get('/api/customers?hidden=true').set('Cookie', authCookies)
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveLength(2)
+    expect(svc.getHiddenCustomers).toHaveBeenCalled()
+    expect(svc.getCustomers).not.toHaveBeenCalled()
+  })
+
+  it('returns 401 without auth', async () => {
+    const res = await request(app).get('/api/customers?hidden=true')
+    expect(res.status).toBe(401)
+  })
+})
+
+describe('POST /api/customers/:phone/hide', () => {
+  it('returns 204 and calls hideCustomer', async () => {
+    vi.mocked(svc.hideCustomer).mockResolvedValue()
+    const res = await request(app)
+      .post('/api/customers/0501234567/hide')
+      .set('Cookie', authCookies)
+    expect(res.status).toBe(204)
+    expect(svc.hideCustomer).toHaveBeenCalledWith('0501234567')
+  })
+
+  it('decodes URI-encoded phone', async () => {
+    vi.mocked(svc.hideCustomer).mockResolvedValue()
+    await request(app)
+      .post('/api/customers/050-123-4567/hide')
+      .set('Cookie', authCookies)
+    expect(svc.hideCustomer).toHaveBeenCalledWith('050-123-4567')
+  })
+
+  it('returns 401 without auth', async () => {
+    const res = await request(app).post('/api/customers/0501234567/hide')
+    expect(res.status).toBe(401)
+  })
+})
+
+describe('DELETE /api/customers/:phone/hide', () => {
+  it('returns 204 and calls unhideCustomer', async () => {
+    vi.mocked(svc.unhideCustomer).mockResolvedValue()
+    const res = await request(app)
+      .delete('/api/customers/0501234567/hide')
+      .set('Cookie', authCookies)
+    expect(res.status).toBe(204)
+    expect(svc.unhideCustomer).toHaveBeenCalledWith('0501234567')
+  })
+
+  it('returns 401 without auth', async () => {
+    const res = await request(app).delete('/api/customers/0501234567/hide')
+    expect(res.status).toBe(401)
   })
 })

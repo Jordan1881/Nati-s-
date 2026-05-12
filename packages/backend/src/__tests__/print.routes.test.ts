@@ -50,6 +50,8 @@ const MOCK_ORDER = {
 let authCookies: string[] = []
 
 beforeAll(async () => {
+  process.env.APP_PASSWORD = 'test-password'
+  process.env.COOKIE_SECRET = 'test-secret'
   const res = await request(app).post('/auth/login').send({ password: 'test-password' })
   authCookies = res.headers['set-cookie'] as string[]
 })
@@ -146,6 +148,71 @@ describe('GET /print/order/:id/customer', () => {
   it('returns 401 without cookie', async () => {
     const res = await request(app).get('/print/order/1/customer')
     expect(res.status).toBe(401)
+  })
+})
+
+describe('GET /print/vouchers/:date', () => {
+  it('returns 200 HTML for a valid date', async () => {
+    vi.mocked(svc.getOrdersWithLinesForDate).mockResolvedValue([MOCK_ORDER] as any)
+    const res = await request(app).get('/print/vouchers/2026-05-15').set('Cookie', authCookies)
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toMatch(/text\/html/)
+  })
+
+  it('renders compact customer slips (not full-page) in the bulk voucher print', async () => {
+    vi.mocked(svc.getOrdersWithLinesForDate).mockResolvedValue([MOCK_ORDER] as any)
+    const res = await request(app).get('/print/vouchers/2026-05-15').set('Cookie', authCookies)
+    expect(res.text).toContain('customer-slip compact')
+    expect(res.text).not.toContain('<section class="page customer-slip">')
+  })
+
+  it('wraps each group of 3 slips in a voucher-page div', async () => {
+    const threeOrders = [
+      { ...MOCK_ORDER, id: 1, dailyNumber: 1 },
+      { ...MOCK_ORDER, id: 2, dailyNumber: 2 },
+      { ...MOCK_ORDER, id: 3, dailyNumber: 3 },
+    ]
+    vi.mocked(svc.getOrdersWithLinesForDate).mockResolvedValue(threeOrders as any)
+    const res = await request(app).get('/print/vouchers/2026-05-15').set('Cookie', authCookies)
+    const voucherPageCount = (res.text.match(/class="voucher-page"/g) ?? []).length
+    expect(voucherPageCount).toBe(1)
+    const slipCutCount = (res.text.match(/class="slip-cut"/g) ?? []).length
+    expect(slipCutCount).toBe(2)
+  })
+
+  it('splits 4 orders into 2 voucher-page wrappers (3+1)', async () => {
+    const fourOrders = [1, 2, 3, 4].map(n => ({ ...MOCK_ORDER, id: n, dailyNumber: n }))
+    vi.mocked(svc.getOrdersWithLinesForDate).mockResolvedValue(fourOrders as any)
+    const res = await request(app).get('/print/vouchers/2026-05-15').set('Cookie', authCookies)
+    const voucherPageCount = (res.text.match(/class="voucher-page"/g) ?? []).length
+    expect(voucherPageCount).toBe(2)
+    const slipCutCount = (res.text.match(/class="slip-cut"/g) ?? []).length
+    expect(slipCutCount).toBe(2)
+  })
+
+  it('returns empty-state message when no orders', async () => {
+    vi.mocked(svc.getOrdersWithLinesForDate).mockResolvedValue([])
+    const res = await request(app).get('/print/vouchers/2026-05-15').set('Cookie', authCookies)
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('אין הזמנות ליום זה')
+    expect(res.text).not.toContain('class="voucher-page"')
+  })
+
+  it('returns 400 on invalid date format', async () => {
+    const res = await request(app).get('/print/vouchers/15-05-2026').set('Cookie', authCookies)
+    expect(res.status).toBe(400)
+  })
+
+  it('returns 401 without cookie', async () => {
+    const res = await request(app).get('/print/vouchers/2026-05-15')
+    expect(res.status).toBe(401)
+  })
+
+  it('individual /customer route still renders full-size slip (not compact)', async () => {
+    vi.mocked(svc.getOrder).mockResolvedValue(MOCK_ORDER as any)
+    const res = await request(app).get('/print/order/1/customer').set('Cookie', authCookies)
+    expect(res.text).toContain('<section class="page customer-slip">')
+    expect(res.text).not.toContain('class="page customer-slip compact"')
   })
 })
 
