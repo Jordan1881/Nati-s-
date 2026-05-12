@@ -106,7 +106,7 @@ router.get('/vouchers/:date', async (req, res) => {
     body = '<div style="font-size:18pt;text-align:center;padding:20mm">אין הזמנות ליום זה</div>'
   } else {
     const chunks: (typeof rows)[] = []
-    for (let i = 0; i < rows.length; i += 3) chunks.push(rows.slice(i, i + 3))
+    for (let i = 0; i < rows.length; i += 2) chunks.push(rows.slice(i, i + 2))
     body = chunks.map(chunk => {
       const slips = chunk
         .map(row => renderCustomerSlip(toPrintOrder(row), toPrintLines(row.lines), true))
